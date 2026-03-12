@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Mais Conectadose</title>
+    <title>Dashboard | Mais Conectados</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -54,10 +54,13 @@
     <header class="max-w-7xl mx-auto mb-6 flex flex-col md:flex-row justify-between items-center gap-4">
         <div>
             <h1 class="text-2xl font-bold text-primary dark:text-blue-400">📊 Dashboard | Mais Conectados</h1>
-            <p class="text-slate-500 dark:text-slate-400 text-sm">Gestão de Cursos</p>
+            <p class="text-slate-500 dark:text-slate-400 text-sm">Gestão Cursos</p>
             <p id="lastUpdateInfo" class="text-[10px] text-slate-400 font-bold uppercase mt-1"></p>
         </div>
         <div class="flex items-center gap-3">
+            <button onclick="exportFilteredData()" class="bg-green-600 text-white px-4 py-2.5 rounded-lg hover:bg-green-700 transition shadow-md font-medium text-sm flex items-center gap-2">
+                <span>Excel Filtrado 📥</span>
+            </button>
             <button onclick="exportDashboardToPDF()" class="bg-red-600 text-white px-4 py-2.5 rounded-lg hover:bg-red-700 transition shadow-md font-medium text-sm flex items-center gap-2">
                 <span>📄 Exportar PDF</span>
             </button>
@@ -170,7 +173,7 @@
         })();
 
         Chart.register(ChartDataLabels);
-        let rawData = [], charts = {}, selectedFilters = { methods: [], courses: [], events: [], facilitators: [], roles: [] };
+        let rawData = [], currentFilteredData = [], charts = {}, selectedFilters = { methods: [], courses: [], events: [], facilitators: [], roles: [] };
         let chartConfigs = { chartRoles: 'bar-h', chartCourses: 'bar-h', chartFacilitators: 'doughnut', chartMethods: 'pie' };
         let cols = { fcp: 'FCP_COMBINED', name: 'Name', email: 'Email', course: 'Course Name', event: 'EVENT_NAME', status: 'STATUS', role: 'Role at FCP', facilitator: 'Partnership Facilitator', method: 'Training Method', date: 'ACTIVITY_DATE_TIME' };
 
@@ -314,19 +317,45 @@
 
         function updateDashboard() {
             const st = document.getElementById('filterStatus').value; const s = document.getElementById('dateStart').value; const e = document.getElementById('dateEnd').value;
-            const filtered = rawData.filter(i => {
+            currentFilteredData = rawData.filter(i => {
                 const d = new Date(i[cols.date]); const dOk = (!s || d >= new Date(s)) && (!e || d <= new Date(e + 'T23:59:59'));
                 return (selectedFilters.methods.length===0 || selectedFilters.methods.includes(i[cols.method])) && (selectedFilters.courses.length===0 || selectedFilters.courses.includes(i[cols.course])) && (selectedFilters.events.length===0 || selectedFilters.events.includes(i[cols.event])) && (selectedFilters.facilitators.length===0 || selectedFilters.facilitators.includes(i[cols.facilitator])) && (selectedFilters.roles.length===0 || selectedFilters.roles.includes(i[cols.role])) && (st==='all' || i[cols.status]===st) && dOk;
             });
-            renderKPIs(filtered); renderCharts(filtered); renderTable(filtered); renderEventSummary(filtered);
+            renderKPIs(currentFilteredData); renderCharts(currentFilteredData); renderTable(currentFilteredData); renderEventSummary(currentFilteredData);
         }
 
         function renderKPIs(d) { const t = d.length; const c = d.filter(i => i[cols.status]==='Completed').length; document.getElementById('kpiTotal').textContent = t; document.getElementById('kpiCompleted').textContent = c; document.getElementById('kpiEnrolled').textContent = t-c; document.getElementById('kpiRate').textContent = t>0 ? ((c/t)*100).toFixed(1)+'%' : '0%'; }
         function renderEventSummary(d) { const counts = {}; d.forEach(i => { const n = i[cols.event]||'N/A'; counts[n] = (counts[n]||0)+1; }); document.getElementById('eventSummaryBody').innerHTML = Object.entries(counts).sort((a,b)=>b[1]-a[1]).map(([n,c])=>`<tr><td class='text-xs py-2 border-b dark:border-slate-700'>${n}</td><td class='text-xs py-2 text-right border-b dark:border-slate-700 font-bold'>${c}</td></tr>`).join(''); }
         
         function renderTable(d) { 
-            document.getElementById('tableBody').innerHTML = d.map(i => `<tr><td>${i[cols.fcp]||''}</td><td class='font-bold'>${i[cols.name]||''}</td><td>${i[cols.email]||''}</td><td>${i[cols.course]||''}</td><td>${i[cols.event]||''}</td><td><span class='px-2 py-0.5 rounded text-[9px] font-bold ${i[cols.status]==='Completed'?'bg-green-100 text-green-700':'bg-amber-100 text-amber-700'}'>${i[cols.status]}</span></td><td>${i[cols.role]||''}</td><td>${i[cols.facilitator]||''}</td><td>${i[cols.method]||''}</td></tr>`).join(''); 
-            document.getElementById('tableCounter').textContent = `Total: ${d.length}`; 
+            // Lógica para remover inscritos duplicados (que já concluíram)
+            const completedKeys = new Set();
+            d.forEach(i => {
+                if(i[cols.status] === 'Completed') {
+                    completedKeys.add(`${i[cols.email]}_${i[cols.course]}`);
+                }
+            });
+
+            const finalDisplayData = d.filter(i => {
+                if(i[cols.status] === 'Enrolled') {
+                    return !completedKeys.has(`${i[cols.email]}_${i[cols.course]}`);
+                }
+                return true;
+            });
+
+            document.getElementById('tableBody').innerHTML = finalDisplayData.map(i => `<tr><td>${i[cols.fcp]||''}</td><td class='font-bold'>${i[cols.name]||''}</td><td>${i[cols.email]||''}</td><td>${i[cols.course]||''}</td><td>${i[cols.event]||''}</td><td><span class='px-2 py-0.5 rounded text-[9px] font-bold ${i[cols.status]==='Completed'?'bg-green-100 text-green-700':'bg-amber-100 text-amber-700'}'>${i[cols.status]}</span></td><td>${i[cols.role]||''}</td><td>${i[cols.facilitator]||''}</td><td>${i[cols.method]||''}</td></tr>`).join(''); 
+            document.getElementById('tableCounter').textContent = `Total: ${finalDisplayData.length}`; 
+        }
+
+        function exportFilteredData() {
+            if (currentFilteredData.length === 0) {
+                alert("Não há dados filtrados para exportar.");
+                return;
+            }
+            const worksheet = XLSX.utils.json_to_sheet(currentFilteredData);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Dados_Filtrados");
+            XLSX.writeFile(workbook, "Base_Filtrada_OpEx.xlsx");
         }
 
         function resetAllFilters() { selectedFilters = { methods: [], courses: [], events: [], facilitators: [], roles: [] }; initDashboard(); }
@@ -342,7 +371,7 @@
                             label: function(context) {
                                 const dataset = context.dataset;
                                 const total = dataset.data.reduce((a, b) => a + b, 0);
-                                const value = context.raw; // Correção principal aplicada aqui
+                                const value = context.raw;
                                 const percentage = ((value / total) * 100).toFixed(1) + '%';
                                 const fullLabel = dataset.fullLabels ? dataset.fullLabels[context.dataIndex] : context.label;
                                 return `${fullLabel}: ${value} (${percentage})`;
@@ -397,7 +426,4 @@
         function filterTable() { const t = document.getElementById('tableSearch').value.toLowerCase(); document.querySelectorAll('#tableBody tr').forEach(tr => tr.style.display = tr.textContent.toLowerCase().includes(t) ? '' : 'none'); }
     </script>
 </body>
-
 </html>
-
-
