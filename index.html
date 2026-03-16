@@ -53,13 +53,13 @@
 
     <header class="max-w-7xl mx-auto mb-6 flex flex-col md:flex-row justify-between items-center gap-4">
         <div>
-            <h1 class="text-2xl font-bold text-primary dark:text-blue-400">📊 Dashboard | Mais Conectados</h1>
-            <p class="text-slate-500 dark:text-slate-400 text-sm">Gestão Cursos</p>
+            <h1 class="text-2xl font-bold text-primary dark:text-blue-400">📊 Dashboard Mais Conectados</h1>
+            <p class="text-slate-500 dark:text-slate-400 text-sm">Gestão de Cursos</p>
             <p id="lastUpdateInfo" class="text-[10px] text-slate-400 font-bold uppercase mt-1"></p>
         </div>
         <div class="flex items-center gap-3">
             <button onclick="exportFilteredData()" class="bg-green-600 text-white px-4 py-2.5 rounded-lg hover:bg-green-700 transition shadow-md font-medium text-sm flex items-center gap-2">
-                <span>Exportar Para Excel 📥</span>
+                <span>Exportar Excel 📥</span>
             </button>
             <button onclick="exportDashboardToPDF()" class="bg-red-600 text-white px-4 py-2.5 rounded-lg hover:bg-red-700 transition shadow-md font-medium text-sm flex items-center gap-2">
                 <span>📄 Exportar PDF</span>
@@ -70,7 +70,7 @@
 
     <main id="dashboardContent" class="max-w-7xl mx-auto hidden">
         <div id="pdfArea">
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-8">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
                 <div class="lg:col-span-2 bg-white dark:bg-darkCard p-5 rounded-xl shadow-sm border-t-4 border-primary">
                     <div class="flex justify-between items-center mb-4">
                         <h3 class="text-sm font-bold uppercase tracking-wider">🔍 Filtros Inteligentes</h3>
@@ -93,10 +93,17 @@
                 </div>
             </div>
 
+            <div id="activeFiltersContainer" class="bg-white dark:bg-darkCard p-4 rounded-xl shadow-sm mb-8 border-l-4 border-primary">
+                <h3 class="text-[10px] font-bold uppercase text-slate-500 dark:text-slate-400 mb-2">Filtros Aplicados Atualmente:</h3>
+                <div id="activeFiltersList" class="flex flex-wrap gap-2">
+                    <span class="text-[10px] text-slate-500 dark:text-slate-400 italic">Nenhum filtro aplicado (visualizando toda a base)</span>
+                </div>
+            </div>
+
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-                <div class="bg-white dark:bg-darkCard p-5 rounded-xl border-b-4 border-blue-600 shadow-sm text-center"><p class="text-xs font-bold text-slate-400 uppercase">Total</p><h2 class="text-2xl font-bold" id="kpiTotal">0</h2></div>
+                <div class="bg-white dark:bg-darkCard p-5 rounded-xl border-b-4 border-blue-600 shadow-sm text-center"><p class="text-xs font-bold text-slate-400 uppercase">Total Inscritos</p><h2 class="text-2xl font-bold" id="kpiTotal">0</h2></div>
                 <div class="bg-white dark:bg-darkCard p-5 rounded-xl border-b-4 border-green-500 shadow-sm text-center"><p class="text-xs font-bold text-slate-400 uppercase">Concluídos</p><h2 class="text-2xl font-bold text-green-600" id="kpiCompleted">0</h2></div>
-                <div class="bg-white dark:bg-darkCard p-5 rounded-xl border-b-4 border-amber-400 shadow-sm text-center"><p class="text-xs font-bold text-slate-400 uppercase">Inscritos</p><h2 class="text-2xl font-bold text-amber-600" id="kpiEnrolled">0</h2></div>
+                <div class="bg-white dark:bg-darkCard p-5 rounded-xl border-b-4 border-amber-400 shadow-sm text-center"><p class="text-xs font-bold text-slate-400 uppercase">Em Andamento (Inscritos)</p><h2 class="text-2xl font-bold text-amber-600" id="kpiEnrolled">0</h2></div>
                 <div class="bg-white dark:bg-darkCard p-5 rounded-xl border-b-4 border-purple-500 shadow-sm text-center"><p class="text-xs font-bold text-slate-400 uppercase">Taxa De Conclusão</p><h2 class="text-2xl font-bold text-purple-600" id="kpiRate">0%</h2></div>
             </div>
 
@@ -134,7 +141,7 @@
                 </div>
 
                 <div class="bg-white dark:bg-darkCard p-6 rounded-xl shadow-sm h-96 relative" id="cardFacilitators">
-                    <div class="flex justify-between items-center mb-4"><h3 class="font-bold text-sm uppercase">👤 Top 5 Facilitadores</h3><div class="flex gap-1 items-center"><select class="chart-selector" onchange="changeChartType('chartFacilitators', this.value)"><option value="doughnut">Rosca</option><option value="pie">Pizza</option><option value="bar-v">Barra Vert.</option></select><button onclick="exportSingleChart('cardFacilitators', 'top-facilitadores')" class="btn-export-mini">PNG</button></div></div>
+                    <div class="flex justify-between items-center mb-4"><h3 class="font-bold text-sm uppercase">👤 Top 5 Facilitadores</h3><div class="flex gap-1 items-center"><select class="chart-selector" onchange="changeChartType('chartFacilitators', this.value)"><option value="bar-v">Barra Vert.</option><option value="doughnut">Rosca</option><option value="pie">Pizza</option></select><button onclick="exportSingleChart('cardFacilitators', 'top-facilitadores')" class="btn-export-mini">PNG</button></div></div>
                     <div class="h-80"><canvas id="chartFacilitators"></canvas></div>
                 </div>
                 <div class="bg-white dark:bg-darkCard p-6 rounded-xl shadow-sm h-96 relative" id="cardMethods">
@@ -174,7 +181,7 @@
 
         Chart.register(ChartDataLabels);
         let rawData = [], currentFilteredData = [], charts = {}, selectedFilters = { methods: [], courses: [], events: [], facilitators: [], roles: [] };
-        let chartConfigs = { chartRoles: 'bar-h', chartCourses: 'bar-h', chartFacilitators: 'doughnut', chartMethods: 'pie' };
+        let chartConfigs = { chartRoles: 'bar-h', chartCourses: 'bar-h', chartFacilitators: 'bar-v', chartMethods: 'pie' };
         let cols = { fcp: 'FCP_COMBINED', name: 'Name', email: 'Email', course: 'Course Name', event: 'EVENT_NAME', status: 'STATUS', role: 'Role at FCP', facilitator: 'Partnership Facilitator', method: 'Training Method', date: 'ACTIVITY_DATE_TIME' };
 
         window.onload = carregarBaseAutomatica;
@@ -216,6 +223,7 @@
             renderDropdown('dropMethod', 'methods', [...new Set(rawData.map(i => i[cols.method]))].sort()); 
             renderDropdown('dropRole', 'roles', [...new Set(rawData.map(i => i[cols.role]))].sort()); 
             updateCascade(); 
+            updateDashboard();
         }
 
         function renderDropdown(elementId, filterKey, options) {
@@ -250,7 +258,7 @@
                     });
                     
                     updateButtonLabel(filterKey);
-                    if (filterKey === 'methods') updateCascade();
+                    if (filterKey === 'methods' || filterKey === 'courses') updateCascade();
                     updateDashboard();
                 };
                 optionsContainer.appendChild(selectAllDiv);
@@ -291,7 +299,7 @@
             }
 
             updateButtonLabel(key);
-            if (key === 'methods') updateCascade();
+            if (key === 'methods' || key === 'courses') updateCascade();
             updateDashboard();
         }
 
@@ -302,7 +310,15 @@
         }
 
         function updateCascade() { 
-            const filtered = selectedFilters.methods.length > 0 ? rawData.filter(i => selectedFilters.methods.includes(i[cols.method])) : rawData; 
+            let filteredByMethod = selectedFilters.methods.length > 0 ? rawData.filter(i => selectedFilters.methods.includes(i[cols.method])) : rawData; 
+
+            renderDropdown('dropCourse', 'courses', [...new Set(filteredByMethod.map(i => i[cols.course]))].sort()); 
+
+            let filteredByCourse = selectedFilters.courses.length > 0 ? filteredByMethod.filter(i => selectedFilters.courses.includes(i[cols.course])) : filteredByMethod;
+
+            renderDropdown('dropEvent', 'events', [...new Set(filteredByCourse.map(i => i[cols.event]))].sort()); 
+            renderDropdown('dropFac', 'facilitators', [...new Set(filteredByCourse.map(i => i[cols.facilitator]))].sort()); 
+
             const statusContainer = document.getElementById('statusFilterContainer');
             if (selectedFilters.methods.some(m => m.trim() === "Computer Based Training")) {
                 statusContainer.classList.remove('hidden');
@@ -310,9 +326,54 @@
                 statusContainer.classList.add('hidden');
                 document.getElementById('filterStatus').value = 'all'; 
             }
-            renderDropdown('dropCourse', 'courses', [...new Set(filtered.map(i => i[cols.course]))].sort()); 
-            renderDropdown('dropEvent', 'events', [...new Set(filtered.map(i => i[cols.event]))].sort()); 
-            renderDropdown('dropFac', 'facilitators', [...new Set(filtered.map(i => i[cols.facilitator]))].sort()); 
+        }
+
+        function updateActiveFiltersDisplay() {
+            const list = document.getElementById('activeFiltersList');
+            if (!list) return;
+            list.innerHTML = '';
+            
+            let hasFilters = false;
+            const filterNames = { methods: 'Método', courses: 'Curso', events: 'Evento', facilitators: 'Facilitador', roles: 'Função' };
+
+            for (const key in selectedFilters) {
+                if (selectedFilters[key].length > 0) {
+                    hasFilters = true;
+                    const badge = document.createElement('span');
+                    badge.className = 'bg-primary/10 text-primary dark:bg-blue-900/50 dark:text-blue-300 text-[10px] font-bold px-2 py-1 rounded border border-primary/20 dark:border-blue-800';
+                    badge.textContent = `${filterNames[key]}: ${selectedFilters[key].length > 3 ? selectedFilters[key].length + ' selecionados' : selectedFilters[key].join(', ')}`;
+                    list.appendChild(badge);
+                }
+            }
+
+            const statusContainer = document.getElementById('statusFilterContainer');
+            const status = document.getElementById('filterStatus').value;
+            if (!statusContainer.classList.contains('hidden') && status !== 'all') {
+                hasFilters = true;
+                const badge = document.createElement('span');
+                badge.className = 'bg-primary/10 text-primary dark:bg-blue-900/50 dark:text-blue-300 text-[10px] font-bold px-2 py-1 rounded border border-primary/20 dark:border-blue-800';
+                badge.textContent = `Status: ${status === 'Completed' ? 'Concluído' : 'Inscrito'}`;
+                list.appendChild(badge);
+            }
+
+            const dateStart = document.getElementById('dateStart').value;
+            const dateEnd = document.getElementById('dateEnd').value;
+            if (dateStart || dateEnd) {
+                hasFilters = true;
+                const badge = document.createElement('span');
+                badge.className = 'bg-primary/10 text-primary dark:bg-blue-900/50 dark:text-blue-300 text-[10px] font-bold px-2 py-1 rounded border border-primary/20 dark:border-blue-800';
+                let dateText = 'Período: ';
+                const formatD = d => d.split('-').reverse().join('/');
+                if (dateStart && dateEnd) dateText += `${formatD(dateStart)} - ${formatD(dateEnd)}`;
+                else if (dateStart) dateText += `A partir de ${formatD(dateStart)}`;
+                else if (dateEnd) dateText += `Até ${formatD(dateEnd)}`;
+                badge.textContent = dateText;
+                list.appendChild(badge);
+            }
+
+            if (!hasFilters) {
+                list.innerHTML = '<span class="text-[10px] text-slate-500 dark:text-slate-400 italic">Nenhum filtro aplicado (visualizando toda a base)</span>';
+            }
         }
 
         function updateDashboard() {
@@ -322,13 +383,36 @@
                 return (selectedFilters.methods.length===0 || selectedFilters.methods.includes(i[cols.method])) && (selectedFilters.courses.length===0 || selectedFilters.courses.includes(i[cols.course])) && (selectedFilters.events.length===0 || selectedFilters.events.includes(i[cols.event])) && (selectedFilters.facilitators.length===0 || selectedFilters.facilitators.includes(i[cols.facilitator])) && (selectedFilters.roles.length===0 || selectedFilters.roles.includes(i[cols.role])) && (st==='all' || i[cols.status]===st) && dOk;
             });
             renderKPIs(currentFilteredData); renderCharts(currentFilteredData); renderTable(currentFilteredData); renderEventSummary(currentFilteredData);
+            updateActiveFiltersDisplay();
         }
 
-        function renderKPIs(d) { const t = d.length; const c = d.filter(i => i[cols.status]==='Completed').length; document.getElementById('kpiTotal').textContent = t; document.getElementById('kpiCompleted').textContent = c; document.getElementById('kpiEnrolled').textContent = t-c; document.getElementById('kpiRate').textContent = t>0 ? ((c/t)*100).toFixed(1)+'%' : '0%'; }
+        function renderKPIs(d) { 
+            const userCourseMap = {};
+            d.forEach(i => {
+                const key = `${i[cols.email]}_${i[cols.course]}`;
+                if (!userCourseMap[key]) {
+                    userCourseMap[key] = { enrolled: true, completed: false };
+                }
+                if (i[cols.status] === 'Completed') {
+                    userCourseMap[key].completed = true;
+                }
+            });
+
+            const uniqueRecords = Object.values(userCourseMap);
+            const totalInscritos = uniqueRecords.length; 
+            const totalConcluidos = uniqueRecords.filter(r => r.completed).length; 
+            const totalEmAndamento = totalInscritos - totalConcluidos; 
+            const taxaConclusao = totalInscritos > 0 ? ((totalConcluidos / totalInscritos) * 100).toFixed(1) : "0";
+
+            document.getElementById('kpiTotal').textContent = totalInscritos; 
+            document.getElementById('kpiCompleted').textContent = totalConcluidos; 
+            document.getElementById('kpiEnrolled').textContent = totalEmAndamento; 
+            document.getElementById('kpiRate').textContent = taxaConclusao + '%'; 
+        }
+
         function renderEventSummary(d) { const counts = {}; d.forEach(i => { const n = i[cols.event]||'N/A'; counts[n] = (counts[n]||0)+1; }); document.getElementById('eventSummaryBody').innerHTML = Object.entries(counts).sort((a,b)=>b[1]-a[1]).map(([n,c])=>`<tr><td class='text-xs py-2 border-b dark:border-slate-700'>${n}</td><td class='text-xs py-2 text-right border-b dark:border-slate-700 font-bold'>${c}</td></tr>`).join(''); }
         
         function renderTable(d) { 
-            // Lógica para remover inscritos duplicados (que já concluíram)
             const completedKeys = new Set();
             d.forEach(i => {
                 if(i[cols.status] === 'Completed') {
@@ -372,19 +456,18 @@
                                 const dataset = context.dataset;
                                 const total = dataset.data.reduce((a, b) => a + b, 0);
                                 const value = context.raw;
-                                const percentage = ((value / total) * 100).toFixed(1) + '%';
+                                const percentage = total > 0 ? ((value / total) * 100).toFixed(1) + '%' : '0%';
                                 const fullLabel = dataset.fullLabels ? dataset.fullLabels[context.dataIndex] : context.label;
                                 return `${fullLabel}: ${value} (${percentage})`;
                             }
                         }
                     },
                     datalabels: { 
-                        display: true, color: '#fff', font: { size: 9, weight: 'bold' }, anchor: 'center', align: 'center',
+                        display: true, color: isDark ? '#fff' : '#444', font: { size: 9, weight: 'bold' }, anchor: 'center', align: 'center',
                         formatter: (val, ctx) => {
                             const sum = ctx.dataset.data.reduce((a, b) => a + b, 0);
-                            const perc = ((val/sum)*100).toFixed(1) + '%';
-                            const label = ctx.dataset.fullLabels ? ctx.dataset.fullLabels[ctx.dataIndex] : '';
-                            return t.startsWith('bar') ? `${label}\n${val} (${perc})` : perc;
+                            const perc = sum > 0 ? ((val/sum)*100).toFixed(1) + '%' : '0%';
+                            return val + " (" + perc + ")";
                         }
                     } 
                 }, 
@@ -412,8 +495,56 @@
                 }]
             }, getBaseOptions(chartConfigs.chartCourses, '#005eb8', isDark));
 
-            const fC = count(cols.facilitator), fL = Object.keys(fC).sort((a,b)=>fC[b]-fC[a]).slice(0,5);
-            updateChart('chartFacilitators', chartConfigs.chartFacilitators.startsWith('bar')?'bar':chartConfigs.chartFacilitators, { labels: fL, datasets:[{ data: fL.map(l=>fC[l]), backgroundColor: colors, borderWidth: 0 }] }, getBaseOptions(chartConfigs.chartFacilitators, colors[0], isDark));
+            const isCBT = selectedFilters.methods.includes("Computer Based Training");
+            const facCounts = {};
+            d.forEach(i => {
+                const matchMethod = isCBT ? i[cols.method] === "Computer Based Training" : true;
+                if (i[cols.status] === 'Completed' && matchMethod) {
+                    facCounts[i[cols.facilitator]] = (facCounts[i[cols.facilitator]] || 0) + 1;
+                }
+            });
+
+            const fL = Object.keys(facCounts).sort((a, b) => facCounts[b] - facCounts[a]).slice(0, 5);
+            const fData = fL.map(l => facCounts[l]);
+            const facChartType = chartConfigs.chartFacilitators.startsWith('bar') ? 'bar' : chartConfigs.chartFacilitators; 
+
+            updateChart('chartFacilitators', facChartType, { 
+                labels: fL, 
+                datasets: [{ 
+                    label: 'Concluídos',
+                    data: fData, 
+                    backgroundColor: colors, 
+                    borderWidth: 0,
+                    borderRadius: 5
+                }] 
+            }, {
+                ...getBaseOptions(facChartType, colors[0], isDark),
+                indexAxis: facChartType === 'bar' ? 'x' : 'y', 
+                plugins: {
+                    ...getBaseOptions(facChartType, colors[0], isDark).plugins,
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const value = context.raw;
+                                const total = fData.reduce((a, b) => a + b, 0);
+                                const percentage = total > 0 ? ((value / total) * 100).toFixed(1) + '%' : '0%';
+                                return `Concluídos: ${value} (${percentage})`;
+                            }
+                        }
+                    },
+                    datalabels: {
+                        display: true,
+                        color: isDark ? '#fff' : '#444',
+                        anchor: 'end',
+                        align: 'top',
+                        formatter: (val, ctx) => {
+                            const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
+                            const perc = total > 0 ? ((val / total) * 100).toFixed(1) + '%' : '0%';
+                            return val + "\n(" + perc + ")";
+                        }
+                    }
+                }
+            });
 
             const mC = count(cols.method), mL = Object.keys(mC);
             updateChart('chartMethods', chartConfigs.chartMethods.startsWith('bar')?'bar':chartConfigs.chartMethods, { labels: mL, datasets:[{ data: mL.map(l=>mC[l]), backgroundColor: colors, borderWidth: 0 }] }, getBaseOptions(chartConfigs.chartMethods, colors[1], isDark));
@@ -427,4 +558,3 @@
     </script>
 </body>
 </html>
-
