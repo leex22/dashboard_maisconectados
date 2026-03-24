@@ -7,6 +7,9 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     
@@ -24,7 +27,6 @@
     <style>
         body { font-family: 'Inter', sans-serif; transition: background-color 0.3s, color 0.3s; }
         .label-filter { font-size: 0.75rem; font-weight: 700; color: #64748b; text-transform: uppercase; margin-bottom: 4px; display: block; }
-        /* Custom Scrollbar para os filtros */
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
@@ -51,8 +53,14 @@
                 <h1 class="text-2xl font-bold text-primary dark:text-blue-400">📊 Dashboard Mais Conectados</h1>
                 <p class="text-slate-500 dark:text-slate-400 text-sm">Gestão Estratégica de Treinamentos</p>
             </div>
-            <div class="flex items-center gap-4">
-                <span id="lastUpdateInfo" class="text-xs text-slate-500 dark:text-slate-400 font-medium bg-white dark:bg-slate-800 px-3 py-1.5 rounded shadow-sm border border-slate-200 dark:border-slate-700">Carregando dados...</span>
+            <div class="flex items-center gap-3 flex-wrap justify-end">
+                <button onclick="exportExcel()" class="bg-green-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-green-700 transition flex items-center gap-1.5 shadow-sm">
+                    📥 Excel
+                </button>
+                <button onclick="exportPDF()" class="bg-red-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-red-700 transition flex items-center gap-1.5 shadow-sm">
+                    📊 PDF
+                </button>
+                <span id="lastUpdateInfo" class="text-xs text-slate-500 dark:text-slate-400 font-medium bg-white dark:bg-slate-800 px-3 py-1.5 rounded shadow-sm border border-slate-200 dark:border-slate-700">Carregando...</span>
                 <button onclick="toggleTheme()" class="bg-slate-200 dark:bg-slate-700 p-2.5 rounded-lg text-lg hover:bg-slate-300 dark:hover:bg-slate-600 transition">🌓</button>
             </div>
         </header>
@@ -91,10 +99,7 @@
                             </button>
                             <div id="drop-Method" class="dropdown-menu hidden absolute z-50 w-full mt-1 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-md shadow-xl flex flex-col max-h-64">
                                 <div class="p-2 border-b dark:border-slate-700 sticky top-0 bg-white dark:bg-slate-800 rounded-t-md">
-                                    <div class="relative">
-                                        <span class="absolute left-2.5 top-1.5 text-xs">🔍</span>
-                                        <input type="text" class="w-full pl-7 pr-2 py-1.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded text-xs dark:text-white focus:outline-none" placeholder="Pesquisar..." onkeyup="filterDropList('drop-Method', this.value)">
-                                    </div>
+                                    <div class="relative"><span class="absolute left-2.5 top-1.5 text-xs">🔍</span><input type="text" class="w-full pl-7 pr-2 py-1.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded text-xs dark:text-white focus:outline-none" placeholder="Pesquisar..." onkeyup="filterDropList('drop-Method', this.value)"></div>
                                 </div>
                                 <div class="p-1 overflow-y-auto flex flex-col custom-scrollbar" id="list-Method"></div>
                             </div>
@@ -108,27 +113,21 @@
                             </button>
                             <div id="drop-Course" class="dropdown-menu hidden absolute z-50 w-full mt-1 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-md shadow-xl flex flex-col max-h-64">
                                 <div class="p-2 border-b dark:border-slate-700 sticky top-0 bg-white dark:bg-slate-800 rounded-t-md">
-                                    <div class="relative">
-                                        <span class="absolute left-2.5 top-1.5 text-xs">🔍</span>
-                                        <input type="text" class="w-full pl-7 pr-2 py-1.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded text-xs dark:text-white focus:outline-none" placeholder="Pesquisar..." onkeyup="filterDropList('drop-Course', this.value)">
-                                    </div>
+                                    <div class="relative"><span class="absolute left-2.5 top-1.5 text-xs">🔍</span><input type="text" class="w-full pl-7 pr-2 py-1.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded text-xs dark:text-white focus:outline-none" placeholder="Pesquisar..." onkeyup="filterDropList('drop-Course', this.value)"></div>
                                 </div>
                                 <div class="p-1 overflow-y-auto flex flex-col custom-scrollbar" id="list-Course"></div>
                             </div>
                         </div>
 
                         <div class="dropdown-wrapper relative">
-                            <label class="label-filter">Público-Alvo (Permissões)</label>
+                            <label class="label-filter">Público-Alvo</label>
                             <button type="button" onclick="toggleDrop('drop-Domain', event)" class="w-full border border-slate-300 dark:border-slate-600 rounded-md p-2 text-left text-sm flex justify-between items-center bg-transparent dark:text-white focus:outline-none">
                                 <span id="label-Domain" class="truncate">Todos selecionados</span>
                                 <span class="text-[10px] ml-2">▼</span>
                             </button>
                             <div id="drop-Domain" class="dropdown-menu hidden absolute z-50 w-full mt-1 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-md shadow-xl flex flex-col max-h-64">
                                 <div class="p-2 border-b dark:border-slate-700 sticky top-0 bg-white dark:bg-slate-800 rounded-t-md">
-                                    <div class="relative">
-                                        <span class="absolute left-2.5 top-1.5 text-xs">🔍</span>
-                                        <input type="text" class="w-full pl-7 pr-2 py-1.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded text-xs dark:text-white focus:outline-none" placeholder="Pesquisar..." onkeyup="filterDropList('drop-Domain', this.value)">
-                                    </div>
+                                    <div class="relative"><span class="absolute left-2.5 top-1.5 text-xs">🔍</span><input type="text" class="w-full pl-7 pr-2 py-1.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded text-xs dark:text-white focus:outline-none" placeholder="Pesquisar..." onkeyup="filterDropList('drop-Domain', this.value)"></div>
                                 </div>
                                 <div class="p-1 overflow-y-auto flex flex-col custom-scrollbar" id="list-Domain"></div>
                             </div>
@@ -142,10 +141,7 @@
                             </button>
                             <div id="drop-Status" class="dropdown-menu hidden absolute z-50 w-full mt-1 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-md shadow-xl flex flex-col max-h-64">
                                 <div class="p-2 border-b dark:border-slate-700 sticky top-0 bg-white dark:bg-slate-800 rounded-t-md">
-                                    <div class="relative">
-                                        <span class="absolute left-2.5 top-1.5 text-xs">🔍</span>
-                                        <input type="text" class="w-full pl-7 pr-2 py-1.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded text-xs dark:text-white focus:outline-none" placeholder="Pesquisar..." onkeyup="filterDropList('drop-Status', this.value)">
-                                    </div>
+                                    <div class="relative"><span class="absolute left-2.5 top-1.5 text-xs">🔍</span><input type="text" class="w-full pl-7 pr-2 py-1.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded text-xs dark:text-white focus:outline-none" placeholder="Pesquisar..." onkeyup="filterDropList('drop-Status', this.value)"></div>
                                 </div>
                                 <div class="p-1 overflow-y-auto flex flex-col custom-scrollbar" id="list-Status"></div>
                             </div>
@@ -159,10 +155,7 @@
                             </button>
                             <div id="drop-Facilitator" class="dropdown-menu hidden absolute z-50 w-full mt-1 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-md shadow-xl flex flex-col max-h-64">
                                 <div class="p-2 border-b dark:border-slate-700 sticky top-0 bg-white dark:bg-slate-800 rounded-t-md">
-                                    <div class="relative">
-                                        <span class="absolute left-2.5 top-1.5 text-xs">🔍</span>
-                                        <input type="text" class="w-full pl-7 pr-2 py-1.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded text-xs dark:text-white focus:outline-none" placeholder="Pesquisar..." onkeyup="filterDropList('drop-Facilitator', this.value)">
-                                    </div>
+                                    <div class="relative"><span class="absolute left-2.5 top-1.5 text-xs">🔍</span><input type="text" class="w-full pl-7 pr-2 py-1.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded text-xs dark:text-white focus:outline-none" placeholder="Pesquisar..." onkeyup="filterDropList('drop-Facilitator', this.value)"></div>
                                 </div>
                                 <div class="p-1 overflow-y-auto flex flex-col custom-scrollbar" id="list-Facilitator"></div>
                             </div>
@@ -176,10 +169,7 @@
                             </button>
                             <div id="drop-Cluster" class="dropdown-menu hidden absolute z-50 w-full mt-1 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-md shadow-xl flex flex-col max-h-64">
                                 <div class="p-2 border-b dark:border-slate-700 sticky top-0 bg-white dark:bg-slate-800 rounded-t-md">
-                                    <div class="relative">
-                                        <span class="absolute left-2.5 top-1.5 text-xs">🔍</span>
-                                        <input type="text" class="w-full pl-7 pr-2 py-1.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded text-xs dark:text-white focus:outline-none" placeholder="Pesquisar..." onkeyup="filterDropList('drop-Cluster', this.value)">
-                                    </div>
+                                    <div class="relative"><span class="absolute left-2.5 top-1.5 text-xs">🔍</span><input type="text" class="w-full pl-7 pr-2 py-1.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded text-xs dark:text-white focus:outline-none" placeholder="Pesquisar..." onkeyup="filterDropList('drop-Cluster', this.value)"></div>
                                 </div>
                                 <div class="p-1 overflow-y-auto flex flex-col custom-scrollbar" id="list-Cluster"></div>
                             </div>
@@ -201,7 +191,6 @@
                         </div>
                     </div>
                 </div>
-
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
@@ -256,12 +245,12 @@
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
                 <div class="bg-white dark:bg-darkCard p-5 rounded-xl shadow-sm">
-                    <h3 class="text-sm font-bold uppercase text-slate-700 dark:text-slate-300 mb-1">Volume por Curso</h3>
+                    <h3 class="text-sm font-bold uppercase text-slate-700 dark:text-slate-300 mb-1">📚 Volume por Curso</h3>
                     <p class="text-[10px] text-slate-500 mb-4">Mostra quais treinamentos têm mais alunos. Ajuda a entender rapidamente quais são os temas de maior interesse ou necessidade.</p>
                     <canvas id="chartCourse"></canvas>
                 </div>
                 <div class="bg-white dark:bg-darkCard p-5 rounded-xl shadow-sm">
-                    <h3 class="text-sm font-bold uppercase text-slate-700 dark:text-slate-300 mb-1">Público-Alvo</h3>
+                    <h3 class="text-sm font-bold uppercase text-slate-700 dark:text-slate-300 mb-1">👥 Público-Alvo</h3>
                     <p class="text-[10px] text-slate-500 mb-4">Divide os alunos pelo seu perfil (ex: Jovens, Funcionários). Serve para saber exatamente quem está consumindo os treinamentos.</p>
                     <div class="flex justify-center" style="height: 300px;">
                         <canvas id="chartDomain"></canvas>
@@ -282,7 +271,7 @@
                 </div>
             </div>
 
-            <div class="bg-white dark:bg-darkCard p-5 rounded-xl shadow-sm mb-8 overflow-hidden">
+            <div id="tableSection" class="bg-white dark:bg-darkCard p-5 rounded-xl shadow-sm mb-8 overflow-hidden">
                 <div class="flex flex-col md:flex-row items-center gap-4 mb-5">
                     <h3 class="text-sm font-bold uppercase text-slate-700 dark:text-slate-300 whitespace-nowrap">📋 Lista de Participantes</h3>
                     <div class="relative w-full">
@@ -314,6 +303,66 @@
     </div>
 
     <script>
+        // === LÓGICA DE EXPORTAÇÃO ===
+        function exportExcel() {
+            if (filteredData.length === 0) {
+                alert("Nenhum dado encontrado para exportar com os filtros atuais.");
+                return;
+            }
+            
+            // Formatando dados para o Excel ficar limpo e em português
+            const exportData = filteredData.map(d => ({
+                "FCP": d.fcp,
+                "ID do Participante": d.participantId,
+                "Nome": d.name,
+                "Email": d.email,
+                "Curso": d.course,
+                "Método": d.method,
+                "Público-Alvo": d.domain,
+                "Facilitador": d.facilitator,
+                "Cluster": d.cluster,
+                "Status": d.status === 'Completed' ? 'Concluído' : 'Inscrito',
+                "Data": d.date ? d.date.toLocaleDateString('pt-BR') : ''
+            }));
+
+            const ws = XLSX.utils.json_to_sheet(exportData);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Dados_Exportados");
+            XLSX.writeFile(wb, "MaisConectados_Exportacao.xlsx");
+        }
+
+        async function exportPDF() {
+            const dashboard = document.getElementById('dashboardContent');
+            const tableSection = document.getElementById('tableSection');
+            
+            // Ocultar a tabela para a exportação
+            tableSection.style.display = 'none';
+            
+            try {
+                const { jsPDF } = window.jspdf;
+                const canvas = await html2canvas(dashboard, {
+                    scale: 2, 
+                    backgroundColor: document.documentElement.classList.contains('dark') ? '#0f172a' : '#f1f5f9'
+                });
+                
+                const imgData = canvas.toDataURL('image/png');
+                const doc = new jsPDF('p', 'mm', 'a4');
+                
+                const pdfWidth = doc.internal.pageSize.getWidth();
+                const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+                
+                doc.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+                doc.save('Dashboard_MaisConectados.pdf');
+            } catch (error) {
+                console.error("Erro ao gerar PDF:", error);
+                alert("Ocorreu um erro ao gerar o PDF.");
+            } finally {
+                // Restaurar a tabela imediatamente após gerar (ou falhar)
+                tableSection.style.display = 'block';
+            }
+        }
+
+        // === RESTANTE DO CÓDIGO ORIGINAL ===
         const SENHA_MESTRA = "1234";
 
         function checkAuth() {
@@ -566,7 +615,6 @@
             document.getElementById('kpiTotal').innerText = total.toLocaleString('pt-BR');
             document.getElementById('kpiUnique').innerText = uniqueStudents.toLocaleString('pt-BR');
 
-            // --- Lógica Nova: Engajamento ---
             const engagement = uniqueStudents > 0 ? (total / uniqueStudents).toFixed(1) : '0';
             document.getElementById('kpiEngagement').innerText = engagement;
 
@@ -602,7 +650,6 @@
                     let value = context.raw;
                     let sum = context.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
                     let pct = sum > 0 ? (value * 100 / sum).toFixed(1) + "%" : "0%";
-                    // Mudança da palavra para 'participantes' conforme pedido
                     return ` ${value} participantes (${pct})`;
                 }
             }
@@ -621,7 +668,6 @@
                 type: 'bar',
                 data: {
                     labels: sortedCourses.map(i => i[0].length > 25 ? i[0].substring(0, 25) + '...' : i[0]),
-                    // Mudança da label interna do chart para 'Participantes'
                     datasets: [{ label: 'Participantes', data: sortedCourses.map(i => i[1]), backgroundColor: '#005eb8', borderRadius: 4 }]
                 },
                 options: { 
@@ -695,10 +741,15 @@
                         datalabels: { color: '#000', font: { weight: 'bold', size: 10 }, formatter: (value) => value + ' dias' },
                         tooltip: { callbacks: { label: (context) => ` ${context.raw} dias em média` } }
                     }, 
-                    scales: { x: { ticks: { color: textColor } }, y: { ticks: { color: textColor, font: { size: 10 } } } } 
+                    // Mudança Clean: Removidas as linhas de grade (gridlines)
+                    scales: { 
+                        x: { grid: { display: false }, ticks: { color: textColor } }, 
+                        y: { grid: { display: false }, ticks: { color: textColor, font: { size: 10 } } } 
+                    } 
                 }
             });
 
+            // Mapa de Calor (Visual Clean - Sem Bordas de Célula)
             const months = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
             const domainsFilter = [...new Set(filteredData.map(d => d.domain))].sort();
             
@@ -714,7 +765,7 @@
                 }
             });
 
-            let heatHtml = '<table class="w-full text-xs text-center border-collapse"><thead><tr><th class="p-1"></th>';
+            let heatHtml = '<table class="w-full text-xs text-center border-separate" style="border-spacing: 2px;"><thead><tr><th class="p-1"></th>';
             months.forEach(m => heatHtml += `<th class="p-1 text-slate-500">${m}</th>`);
             heatHtml += '</tr></thead><tbody>';
 
@@ -726,7 +777,7 @@
                     const alpha = intensity > 0 ? 0.15 + (intensity * 0.85) : 0.05;
                     const color = val > 0 ? (intensity > 0.4 ? 'white' : 'black') : 'transparent';
                     const displayVal = val > 0 ? val : '';
-                    heatHtml += `<td class="p-2 border border-white dark:border-slate-800 transition hover:scale-105" style="background-color: rgba(0, 94, 184, ${alpha}); color: ${color}; border-radius: 6px;">${displayVal}</td>`;
+                    heatHtml += `<td class="p-2 transition hover:scale-105 rounded-md" style="background-color: rgba(0, 94, 184, ${alpha}); color: ${color};">${displayVal}</td>`;
                 }
                 heatHtml += '</tr>';
             });
