@@ -76,7 +76,10 @@
                             A porcentagem de alunos que se inscrevem e realmente chegam até o fim. Mede a eficiência do treinamento.
                         </div>
                     </div>
-                    <span id="conversionRateText" class="text-2xl font-bold text-green-600">0%</span>
+                    <div class="flex flex-col items-end">
+                        <span id="conversionRateText" class="text-2xl font-bold text-green-600 leading-none">0%</span>
+                        <span id="conversionAbsText" class="text-[10px] text-slate-400 font-medium mt-1">0 concluídos</span>
+                    </div>
                 </div>
                 <div class="w-full bg-slate-200 rounded-full h-5 dark:bg-slate-700 overflow-hidden shadow-inner mt-3">
                     <div id="conversionProgressBar" class="bg-green-500 h-5 rounded-full transition-all duration-1000 ease-out flex items-center justify-end pr-2 text-[10px] text-white font-bold" style="width: 0%"></div>
@@ -627,6 +630,10 @@
             
             const rateStr = convRate.toFixed(1) + '%';
             document.getElementById('conversionRateText').innerText = rateStr;
+            
+            // Alteração: Inserido o número de concluídos abaixo da porcentagem
+            document.getElementById('conversionAbsText').innerText = `${completed.toLocaleString('pt-BR')} concluídos`;
+            
             const progressBar = document.getElementById('conversionProgressBar');
             progressBar.style.width = rateStr;
             
@@ -677,7 +684,11 @@
                         datalabels: datalabelsConfigPercent,
                         tooltip: tooltipConfigPercent
                     }, 
-                    scales: { x: { ticks: { color: textColor } }, y: { ticks: { color: textColor, font: { size: 10 } } } } 
+                    // Alteração: Linhas de grade removidas (grid display: false) para manter visual clean
+                    scales: { 
+                        x: { grid: { display: false }, ticks: { color: textColor } }, 
+                        y: { grid: { display: false }, ticks: { color: textColor, font: { size: 10 } } } 
+                    } 
                 }
             });
 
