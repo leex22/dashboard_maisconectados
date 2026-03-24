@@ -68,7 +68,7 @@
                     <select id="filterCourse" onchange="applyFilters()"><option value="all">Todos</option></select>
                 </div>
                 <div>
-                    <label class="label-filter">Público-Alvo (Domínio)</label>
+                    <label class="label-filter">Público-Alvo (Permissões)</label>
                     <select id="filterDomain" onchange="applyFilters()"><option value="all">Todos</option></select>
                 </div>
                 <div>
@@ -97,16 +97,53 @@
             </div>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
             <div class="bg-white dark:bg-darkCard p-5 rounded-xl shadow-sm">
                 <h3 class="text-sm font-bold uppercase text-slate-700 dark:text-slate-300 mb-4">Volume por Curso</h3>
                 <canvas id="chartCourse"></canvas>
             </div>
             <div class="bg-white dark:bg-darkCard p-5 rounded-xl shadow-sm">
-                <h3 class="text-sm font-bold uppercase text-slate-700 dark:text-slate-300 mb-4">Público-Alvo</h3>
+                <h3 class="text-sm font-bold uppercase text-slate-700 dark:text-slate-300 mb-4">Público-Alvo (Permissões)</h3>
                 <div class="flex justify-center" style="height: 300px;">
                     <canvas id="chartDomain"></canvas>
                 </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <div class="bg-white dark:bg-darkCard p-5 rounded-xl shadow-sm">
+                <h3 class="text-sm font-bold uppercase text-slate-700 dark:text-slate-300 mb-1">⏳ Lead Time de Aprendizagem</h3>
+                <p class="text-[10px] text-slate-500 mb-4">Média em dias entre a inscrição (Enrolled) e a conclusão (Completed).</p>
+                <canvas id="chartLeadTime"></canvas>
+            </div>
+            <div class="bg-white dark:bg-darkCard p-5 rounded-xl shadow-sm overflow-x-auto">
+                <h3 class="text-sm font-bold uppercase text-slate-700 dark:text-slate-300 mb-1">🔥 Mapa de Calor Sazonal</h3>
+                <p class="text-[10px] text-slate-500 mb-4">Volume de Conclusões: Cruza o mês do ano com o Público-Alvo.</p>
+                <div id="heatmapContainer" class="min-w-[500px]">
+                    </div>
+            </div>
+        </div>
+
+        <div class="bg-white dark:bg-darkCard p-5 rounded-xl shadow-sm mb-8 overflow-hidden">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-sm font-bold uppercase text-slate-700 dark:text-slate-300">📋 Lista de Participantes</h3>
+                <span class="text-[10px] text-slate-500">Mostrando os 100 primeiros registros filtrados.</span>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-xs uppercase tracking-wider">
+                            <th class="p-3 font-semibold rounded-tl">FCP</th>
+                            <th class="p-3 font-semibold">Participant ID</th>
+                            <th class="p-3 font-semibold">Nome</th>
+                            <th class="p-3 font-semibold">Email</th>
+                            <th class="p-3 font-semibold">Curso</th>
+                            <th class="p-3 font-semibold rounded-tr">Data / Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        </tbody>
+                </table>
             </div>
         </div>
 
@@ -120,14 +157,12 @@
         // Inicia o carregamento assim que a tela abre
         window.onload = carregarBaseAutomatica;
 
-        // Lógica Original de Leitura Direto do Repositório/Diretório
         async function carregarBaseAutomatica() {
             try {
                 let response = await fetch('dados.xlsx');
                 if (!response.ok) response = await fetch('dados.csv');
                 if (!response.ok) throw new Error("Arquivo não encontrado");
 
-                // Coletar data de modificação, assim como no original
                 const lastMod = response.headers.get('Last-Modified');
                 if (lastMod) {
                     const date = new Date(lastMod);
@@ -140,13 +175,22 @@
                 const workbook = XLSX.read(new Uint8Array(arrayBuffer), { type: 'array', cellDates: true });
                 const json = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { defval: "" });
 
-                // Processamento de Limpeza de Nomenclatura
-                rawData = json.map(row => ({
-                    course: (row['Course Name'] || 'Sem Nome').trim(),
-                    method: (row['Training Method'] || 'N/A').trim(),
-                    domain: (row['Domain'] || 'N/A').trim(),
-                    status: (row['ACTIVITY_CODE'] || '').trim()
-                })).filter(row => row.status !== ''); // Ignorar linhas vazias
+                // Processamento e Mapeamento
+                rawData = json.map(row => {
+                    let parsedDate = new Date(row['ACTIVITY_DATE_TIME']);
+                    return {
+                        fcp: (row['FCP'] || '').trim(),
+                        participantId: (row['PARTICIPANT_ID'] || '').trim(),
+                        name: (row['Name'] || '').trim(),
+                        email: (row['Email'] || '').trim(),
+                        course: (row['Course Name'] || 'Sem Nome').trim(),
+                        method: (row['Training Method'] || 'N/A').trim(),
+                        // AQUI ESTÁ A MUDANÇA (1): Lendo da coluna PERMISSIONS
+                        domain: (row['PERMISSIONS'] || 'N/A').trim(), 
+                        status: (row['ACTIVITY_CODE'] || '').trim(),
+                        date: isNaN(parsedDate.getTime()) ? null : parsedDate
+                    };
+                }).filter(row => row.status !== '');
 
                 document.getElementById('dashboardContent').classList.remove('hidden');
                 populateDropdowns();
@@ -159,7 +203,6 @@
             }
         }
 
-        // Preenche os filtros baseados nos dados unicos
         function populateDropdowns() {
             const courses = [...new Set(rawData.map(d => d.course))].sort();
             const methods = [...new Set(rawData.map(d => d.method))].sort();
@@ -191,6 +234,7 @@
 
             updateKPIs();
             updateCharts();
+            updateTable(); // AQUI ESTÁ A MUDANÇA (2): Chamada da Tabela
         }
 
         function resetFilters() {
@@ -210,18 +254,14 @@
             document.getElementById('kpiEnrolled').innerText = enrolled.toLocaleString('pt-BR');
             document.getElementById('kpiCompleted').innerText = completed.toLocaleString('pt-BR');
 
-            // Lógica do Modo Meta (Conversão)
             let convRate = 0;
-            if (enrolled > 0 || completed > 0) {
-               convRate = (completed / total) * 100;
-            }
+            if (enrolled > 0 || completed > 0) convRate = (completed / total) * 100;
             
             const rateStr = convRate.toFixed(1) + '%';
             document.getElementById('conversionRateText').innerText = rateStr;
             const progressBar = document.getElementById('conversionProgressBar');
             progressBar.style.width = rateStr;
             
-            // Alterar cor dependendo da saúde da meta
             if(convRate < 40) progressBar.className = "h-5 rounded-full transition-all duration-1000 ease-out flex items-center justify-end pr-2 text-[10px] text-white font-bold bg-red-500";
             else if(convRate < 70) progressBar.className = "h-5 rounded-full transition-all duration-1000 ease-out flex items-center justify-end pr-2 text-[10px] text-white font-bold bg-amber-500";
             else progressBar.className = "h-5 rounded-full transition-all duration-1000 ease-out flex items-center justify-end pr-2 text-[10px] text-white font-bold bg-green-500";
@@ -231,56 +271,146 @@
             const isDark = document.documentElement.classList.contains('dark');
             const textColor = isDark ? '#cbd5e1' : '#475569';
 
-            // Agregação para Cursos
+            // --- 1. Gráfico Volume de Cursos ---
             const courseCounts = {};
             filteredData.forEach(d => { courseCounts[d.course] = (courseCounts[d.course] || 0) + 1; });
             const sortedCourses = Object.entries(courseCounts).sort((a,b)=>b[1]-a[1]).slice(0, 7);
 
-            // Agregação para Público-Alvo (Domain)
-            const domainCounts = {};
-            filteredData.forEach(d => { domainCounts[d.domain] = (domainCounts[d.domain] || 0) + 1; });
-
-            // Gráfico de Cursos (Barras)
             if (charts.chartCourse) charts.chartCourse.destroy();
             charts.chartCourse = new Chart(document.getElementById('chartCourse'), {
                 type: 'bar',
                 data: {
                     labels: sortedCourses.map(i => i[0].length > 25 ? i[0].substring(0, 25) + '...' : i[0]),
-                    datasets: [{
-                        label: 'Transações',
-                        data: sortedCourses.map(i => i[1]),
-                        backgroundColor: '#005eb8',
-                        borderRadius: 4
-                    }]
+                    datasets: [{ label: 'Transações', data: sortedCourses.map(i => i[1]), backgroundColor: '#005eb8', borderRadius: 4 }]
                 },
                 options: {
-                    indexAxis: 'y',
-                    plugins: { legend: { display: false } },
-                    scales: { 
-                        x: { ticks: { color: textColor } },
-                        y: { ticks: { color: textColor, font: { size: 10 } } }
-                    }
+                    indexAxis: 'y', plugins: { legend: { display: false } },
+                    scales: { x: { ticks: { color: textColor } }, y: { ticks: { color: textColor, font: { size: 10 } } } }
                 }
             });
 
-            // Gráfico de Público Alvo (Doughnut)
+            // --- 2. Gráfico Público Alvo ---
+            const domainCounts = {};
+            filteredData.forEach(d => { domainCounts[d.domain] = (domainCounts[d.domain] || 0) + 1; });
+
             if (charts.chartDomain) charts.chartDomain.destroy();
             charts.chartDomain = new Chart(document.getElementById('chartDomain'), {
                 type: 'doughnut',
                 data: {
                     labels: Object.keys(domainCounts),
-                    datasets: [{
-                        data: Object.values(domainCounts),
-                        backgroundColor: ['#005eb8', '#f59e0b', '#10b981', '#6366f1', '#8b5cf6'],
-                        borderWidth: 0
-                    }]
+                    datasets: [{ data: Object.values(domainCounts), backgroundColor: ['#005eb8', '#f59e0b', '#10b981', '#6366f1', '#8b5cf6'], borderWidth: 0 }]
+                },
+                options: { maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: textColor } } } }
+            });
+
+            // --- 3. AQUI ESTÁ A MUDANÇA (3): Gráfico de Lead Time ---
+            const userCourse = {};
+            // Mapeia entrada e conclusão para a mesma pessoa no mesmo curso
+            rawData.forEach(d => {
+                if(!d.date || d.participantId === '') return;
+                const key = d.participantId + '|' + d.course;
+                if(!userCourse[key]) userCourse[key] = { course: d.course };
+                if(d.status === 'Enrolled') userCourse[key].enrolled = d.date;
+                if(d.status === 'Completed') userCourse[key].completed = d.date;
+            });
+
+            const leadTimesByCourse = {};
+            Object.values(userCourse).forEach(pair => {
+                if(pair.enrolled && pair.completed && pair.completed >= pair.enrolled) {
+                    const diffTime = Math.abs(pair.completed - pair.enrolled);
+                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                    if(!leadTimesByCourse[pair.course]) leadTimesByCourse[pair.course] = { sum: 0, count: 0 };
+                    leadTimesByCourse[pair.course].sum += diffDays;
+                    leadTimesByCourse[pair.course].count++;
+                }
+            });
+
+            const courseLeadTimeAvg = {};
+            Object.keys(leadTimesByCourse).forEach(c => {
+                courseLeadTimeAvg[c] = (leadTimesByCourse[c].sum / leadTimesByCourse[c].count).toFixed(1);
+            });
+            const sortedLeadTimes = Object.entries(courseLeadTimeAvg).sort((a,b)=>b[1]-a[1]).slice(0, 7);
+
+            if(charts.chartLeadTime) charts.chartLeadTime.destroy();
+            charts.chartLeadTime = new Chart(document.getElementById('chartLeadTime'), {
+                type: 'bar',
+                data: {
+                    labels: sortedLeadTimes.map(i => i[0].length > 25 ? i[0].substring(0,25)+'...' : i[0]),
+                    datasets: [{ label: 'Média (Dias)', data: sortedLeadTimes.map(i => i[1]), backgroundColor: '#f59e0b', borderRadius: 4 }]
                 },
                 options: {
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { position: 'bottom', labels: { color: textColor } }
-                    }
+                    indexAxis: 'y', plugins: { legend: { display: false } },
+                    scales: { x: { ticks: { color: textColor } }, y: { ticks: { color: textColor, font: { size: 10 } } } }
                 }
+            });
+
+            // --- 4. AQUI ESTÁ A MUDANÇA (4): Mapa de Calor HTML ---
+            const months = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
+            const domainsFilter = [...new Set(filteredData.map(d => d.domain))].sort();
+            
+            const matrix = {};
+            domainsFilter.forEach(d => { matrix[d] = new Array(12).fill(0); });
+
+            let maxHeatVal = 0;
+            // Considerando apenas Concluídos para a Sazonalidade
+            filteredData.filter(d => d.status === 'Completed' && d.date).forEach(d => {
+                const m = d.date.getMonth();
+                if(matrix[d.domain]) {
+                    matrix[d.domain][m]++;
+                    if(matrix[d.domain][m] > maxHeatVal) maxHeatVal = matrix[d.domain][m];
+                }
+            });
+
+            let heatHtml = '<table class="w-full text-xs text-center border-collapse"><thead><tr><th class="p-1"></th>';
+            months.forEach(m => heatHtml += `<th class="p-1 text-slate-500">${m}</th>`);
+            heatHtml += '</tr></thead><tbody>';
+
+            domainsFilter.forEach(d => {
+                heatHtml += `<tr><td class="p-1 text-left font-semibold text-slate-600 dark:text-slate-300 w-1/4">${d}</td>`;
+                for(let m=0; m<12; m++) {
+                    const val = matrix[d][m];
+                    const intensity = maxHeatVal > 0 ? (val / maxHeatVal) : 0;
+                    // Escala de transparência azul baseada na intensidade (volume)
+                    const alpha = intensity > 0 ? 0.15 + (intensity * 0.85) : 0.05;
+                    const color = val > 0 ? (intensity > 0.4 ? 'white' : 'black') : 'transparent';
+                    const displayVal = val > 0 ? val : '';
+                    heatHtml += `<td class="p-2 border border-white dark:border-slate-800 transition hover:scale-105" style="background-color: rgba(0, 94, 184, ${alpha}); color: ${color}; border-radius: 6px;">${displayVal}</td>`;
+                }
+                heatHtml += '</tr>';
+            });
+            heatHtml += '</tbody></table>';
+            document.getElementById('heatmapContainer').innerHTML = heatHtml;
+        }
+
+        // --- AQUI ESTÁ A MUDANÇA (2): Tabela ---
+        function updateTable() {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+            
+            // Limitando a 100 registros para alta performance do Front-End
+            const displayData = filteredData.slice(0, 100);
+            
+            if(displayData.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-500">Nenhum registro encontrado.</td></tr>`;
+                return;
+            }
+
+            displayData.forEach(d => {
+                const dateStr = d.date ? d.date.toLocaleDateString('pt-BR') : '-';
+                const statusBadge = d.status === 'Completed' 
+                    ? `<span class="text-[9px] ml-2 px-1.5 py-0.5 bg-green-100 text-green-700 rounded border border-green-200 uppercase font-bold">Concluído</span>`
+                    : `<span class="text-[9px] ml-2 px-1.5 py-0.5 bg-amber-100 text-amber-700 rounded border border-amber-200 uppercase font-bold">Inscrito</span>`;
+
+                tbody.innerHTML += `
+                    <tr class="border-b border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition">
+                        <td class="p-3 text-sm text-slate-700 dark:text-slate-300">${d.fcp || '-'}</td>
+                        <td class="p-3 text-sm text-slate-700 dark:text-slate-300">${d.participantId || '-'}</td>
+                        <td class="p-3 text-sm text-slate-700 dark:text-slate-300">${d.name || '-'}</td>
+                        <td class="p-3 text-sm text-slate-700 dark:text-slate-300">${d.email || '-'}</td>
+                        <td class="p-3 text-sm text-slate-700 dark:text-slate-300 truncate max-w-[200px]" title="${d.course}">${d.course}</td>
+                        <td class="p-3 text-sm text-slate-700 dark:text-slate-300 flex items-center">${dateStr} ${statusBadge}</td>
+                    </tr>
+                `;
             });
         }
 
