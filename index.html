@@ -23,8 +23,11 @@
     <style>
         body { font-family: 'Inter', sans-serif; transition: background-color 0.3s, color 0.3s; }
         .label-filter { font-size: 0.75rem; font-weight: 700; color: #64748b; text-transform: uppercase; margin-bottom: 4px; display: block; }
-        select { border: 1px solid #cbd5e1; border-radius: 6px; padding: 8px; width: 100%; font-size: 0.875rem; background-color: inherit; cursor: pointer;}
-        .dark select { border-color: #475569; color: white; }
+        /* Custom Scrollbar para os filtros */
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .dark .custom-scrollbar::-webkit-scrollbar-thumb { background: #475569; }
     </style>
 </head>
 <body class="bg-slate-100 text-slate-900 dark:bg-darkBg dark:text-slate-100 p-4 md:p-8">
@@ -59,26 +62,75 @@
                 <button onclick="resetFilters()" class="text-xs bg-red-100 text-red-600 px-3 py-1.5 rounded font-bold uppercase hover:bg-red-200 transition">Limpar Filtros</button>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div>
+                
+                <div class="dropdown-wrapper relative">
                     <label class="label-filter">Método de Treinamento</label>
-                    <select id="filterMethod" onchange="applyFilters()"><option value="all">Todos</option></select>
+                    <button type="button" onclick="toggleDrop('drop-Method', event)" class="w-full border border-slate-300 dark:border-slate-600 rounded-md p-2 text-left text-sm flex justify-between items-center bg-transparent dark:text-white focus:outline-none">
+                        <span id="label-Method" class="truncate">Todos selecionados</span>
+                        <span class="text-[10px] ml-2">▼</span>
+                    </button>
+                    <div id="drop-Method" class="dropdown-menu hidden absolute z-50 w-full mt-1 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-md shadow-xl flex flex-col max-h-64">
+                        <div class="p-2 border-b dark:border-slate-700 sticky top-0 bg-white dark:bg-slate-800 rounded-t-md">
+                            <div class="relative">
+                                <span class="absolute left-2.5 top-1.5 text-xs">🔍</span>
+                                <input type="text" class="w-full pl-7 pr-2 py-1.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded text-xs dark:text-white focus:outline-none" placeholder="Pesquisar..." onkeyup="filterDropList('drop-Method', this.value)">
+                            </div>
+                        </div>
+                        <div class="p-1 overflow-y-auto flex flex-col custom-scrollbar" id="list-Method"></div>
+                    </div>
                 </div>
-                <div>
+
+                <div class="dropdown-wrapper relative">
                     <label class="label-filter">Curso</label>
-                    <select id="filterCourse" onchange="applyFilters()"><option value="all">Todos</option></select>
+                    <button type="button" onclick="toggleDrop('drop-Course', event)" class="w-full border border-slate-300 dark:border-slate-600 rounded-md p-2 text-left text-sm flex justify-between items-center bg-transparent dark:text-white focus:outline-none">
+                        <span id="label-Course" class="truncate">Todos selecionados</span>
+                        <span class="text-[10px] ml-2">▼</span>
+                    </button>
+                    <div id="drop-Course" class="dropdown-menu hidden absolute z-50 w-full mt-1 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-md shadow-xl flex flex-col max-h-64">
+                        <div class="p-2 border-b dark:border-slate-700 sticky top-0 bg-white dark:bg-slate-800 rounded-t-md">
+                            <div class="relative">
+                                <span class="absolute left-2.5 top-1.5 text-xs">🔍</span>
+                                <input type="text" class="w-full pl-7 pr-2 py-1.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded text-xs dark:text-white focus:outline-none" placeholder="Pesquisar..." onkeyup="filterDropList('drop-Course', this.value)">
+                            </div>
+                        </div>
+                        <div class="p-1 overflow-y-auto flex flex-col custom-scrollbar" id="list-Course"></div>
+                    </div>
                 </div>
-                <div>
+
+                <div class="dropdown-wrapper relative">
                     <label class="label-filter">Público-Alvo (Permissões)</label>
-                    <select id="filterDomain" onchange="applyFilters()"><option value="all">Todos</option></select>
+                    <button type="button" onclick="toggleDrop('drop-Domain', event)" class="w-full border border-slate-300 dark:border-slate-600 rounded-md p-2 text-left text-sm flex justify-between items-center bg-transparent dark:text-white focus:outline-none">
+                        <span id="label-Domain" class="truncate">Todos selecionados</span>
+                        <span class="text-[10px] ml-2">▼</span>
+                    </button>
+                    <div id="drop-Domain" class="dropdown-menu hidden absolute z-50 w-full mt-1 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-md shadow-xl flex flex-col max-h-64">
+                        <div class="p-2 border-b dark:border-slate-700 sticky top-0 bg-white dark:bg-slate-800 rounded-t-md">
+                            <div class="relative">
+                                <span class="absolute left-2.5 top-1.5 text-xs">🔍</span>
+                                <input type="text" class="w-full pl-7 pr-2 py-1.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded text-xs dark:text-white focus:outline-none" placeholder="Pesquisar..." onkeyup="filterDropList('drop-Domain', this.value)">
+                            </div>
+                        </div>
+                        <div class="p-1 overflow-y-auto flex flex-col custom-scrollbar" id="list-Domain"></div>
+                    </div>
                 </div>
-                <div>
+
+                <div class="dropdown-wrapper relative">
                     <label class="label-filter">Status</label>
-                    <select id="filterStatus" onchange="applyFilters()">
-                        <option value="all">Todos</option>
-                        <option value="Completed">Concluído ✅</option>
-                        <option value="Enrolled">Inscrito 📝</option>
-                    </select>
+                    <button type="button" onclick="toggleDrop('drop-Status', event)" class="w-full border border-slate-300 dark:border-slate-600 rounded-md p-2 text-left text-sm flex justify-between items-center bg-transparent dark:text-white focus:outline-none">
+                        <span id="label-Status" class="truncate">Todos selecionados</span>
+                        <span class="text-[10px] ml-2">▼</span>
+                    </button>
+                    <div id="drop-Status" class="dropdown-menu hidden absolute z-50 w-full mt-1 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-md shadow-xl flex flex-col max-h-64">
+                        <div class="p-2 border-b dark:border-slate-700 sticky top-0 bg-white dark:bg-slate-800 rounded-t-md">
+                            <div class="relative">
+                                <span class="absolute left-2.5 top-1.5 text-xs">🔍</span>
+                                <input type="text" class="w-full pl-7 pr-2 py-1.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded text-xs dark:text-white focus:outline-none" placeholder="Pesquisar..." onkeyup="filterDropList('drop-Status', this.value)">
+                            </div>
+                        </div>
+                        <div class="p-1 overflow-y-auto flex flex-col custom-scrollbar" id="list-Status"></div>
+                    </div>
                 </div>
+
             </div>
         </div>
 
@@ -119,15 +171,20 @@
             <div class="bg-white dark:bg-darkCard p-5 rounded-xl shadow-sm overflow-x-auto">
                 <h3 class="text-sm font-bold uppercase text-slate-700 dark:text-slate-300 mb-1">🔥 Mapa de Calor Sazonal</h3>
                 <p class="text-[10px] text-slate-500 mb-4">Volume de Conclusões: Cruza o mês do ano com o Público-Alvo.</p>
-                <div id="heatmapContainer" class="min-w-[500px]">
-                    </div>
+                <div id="heatmapContainer" class="min-w-[500px]"></div>
             </div>
         </div>
 
         <div class="bg-white dark:bg-darkCard p-5 rounded-xl shadow-sm mb-8 overflow-hidden">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-sm font-bold uppercase text-slate-700 dark:text-slate-300">📋 Lista de Participantes</h3>
-                <span class="text-[10px] text-slate-500">Mostrando os 100 primeiros registros filtrados.</span>
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4">
+                <div>
+                    <h3 class="text-sm font-bold uppercase text-slate-700 dark:text-slate-300">📋 Lista de Participantes</h3>
+                    <span class="text-[10px] text-slate-500 block">Mostrando os 100 primeiros registros filtrados.</span>
+                </div>
+                <div class="relative w-full md:w-80">
+                    <span class="absolute left-3 top-2 text-sm">🔍</span>
+                    <input type="text" id="tableSearch" placeholder="Pesquisar FCP, ID, Nome ou Email..." class="w-full pl-9 pr-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg text-sm bg-slate-50 dark:bg-slate-700 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-primary" onkeyup="updateTable()">
+                </div>
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse">
@@ -138,7 +195,8 @@
                             <th class="p-3 font-semibold">Nome</th>
                             <th class="p-3 font-semibold">Email</th>
                             <th class="p-3 font-semibold">Curso</th>
-                            <th class="p-3 font-semibold rounded-tr">Data / Status</th>
+                            <th class="p-3 font-semibold text-center">Status</th>
+                            <th class="p-3 font-semibold rounded-tr text-right">Data</th>
                         </tr>
                     </thead>
                     <tbody id="tableBody">
@@ -154,7 +212,67 @@
         let filteredData = [];
         let charts = {};
 
-        // Inicia o carregamento assim que a tela abre
+        // Fecha menus abertos ao clicar fora
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.dropdown-wrapper')) {
+                document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.add('hidden'));
+            }
+        });
+
+        function toggleDrop(id, event) {
+            event.stopPropagation();
+            const menu = document.getElementById(id);
+            const isHidden = menu.classList.contains('hidden');
+            document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.add('hidden'));
+            if (isHidden) menu.classList.remove('hidden');
+        }
+
+        // Pesquisa dentro do filtro
+        function filterDropList(dropId, term) {
+            term = term.toLowerCase();
+            const items = document.querySelectorAll(`#${dropId} .drop-item`);
+            items.forEach(item => {
+                if(item.querySelector('.item-text').innerText.toLowerCase().includes(term) || item.querySelector('input').value === 'all') {
+                    item.style.display = 'flex';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+
+        function toggleAllDrop(type, isChecked) {
+            const cbs = document.querySelectorAll(`.cb-${type}:not([value="all"])`);
+            cbs.forEach(cb => cb.checked = isChecked);
+            updateDropSelection(type);
+        }
+
+        function updateDropSelection(type) {
+            const allCb = document.querySelector(`#list-${type} input[value="all"]`);
+            const cbs = document.querySelectorAll(`.cb-${type}:not([value="all"])`);
+            const checkedCount = Array.from(cbs).filter(cb => cb.checked).length;
+            
+            if(allCb) allCb.checked = (checkedCount === cbs.length);
+
+            const label = document.getElementById(`label-${type}`);
+            if (checkedCount === cbs.length || checkedCount === 0) {
+                label.innerText = "Todos selecionados";
+            } else if (checkedCount === 1) {
+                const singleItem = Array.from(cbs).find(cb => cb.checked);
+                label.innerText = singleItem.nextElementSibling.innerText.substring(0, 20) + '...';
+            } else {
+                label.innerText = `${checkedCount} itens selecionados`;
+            }
+
+            applyFilters();
+        }
+
+        function getSelectedValues(type) {
+            const allCb = document.querySelector(`#list-${type} input[value="all"]`);
+            if (allCb && allCb.checked) return 'all';
+            const selected = Array.from(document.querySelectorAll(`.cb-${type}:not([value="all"])`)).filter(cb => cb.checked).map(cb => cb.value);
+            return selected.length > 0 ? selected : ['__none__'];
+        }
+
         window.onload = carregarBaseAutomatica;
 
         async function carregarBaseAutomatica() {
@@ -175,7 +293,6 @@
                 const workbook = XLSX.read(new Uint8Array(arrayBuffer), { type: 'array', cellDates: true });
                 const json = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { defval: "" });
 
-                // Processamento e Mapeamento
                 rawData = json.map(row => {
                     let parsedDate = new Date(row['ACTIVITY_DATE_TIME']);
                     return {
@@ -185,7 +302,6 @@
                         email: (row['Email'] || '').trim(),
                         course: (row['Course Name'] || 'Sem Nome').trim(),
                         method: (row['Training Method'] || 'N/A').trim(),
-                        // AQUI ESTÁ A MUDANÇA (1): Lendo da coluna PERMISSIONS
                         domain: (row['PERMISSIONS'] || 'N/A').trim(), 
                         status: (row['ACTIVITY_CODE'] || '').trim(),
                         date: isNaN(parsedDate.getTime()) ? null : parsedDate
@@ -196,11 +312,26 @@
                 populateDropdowns();
                 applyFilters();
             } catch (error) {
-                console.error("Erro ao carregar os dados:", error);
+                console.error("Erro:", error);
                 document.getElementById('lastUpdateInfo').textContent = "Erro ao carregar base";
                 document.getElementById('lastUpdateInfo').classList.add("text-red-500");
-                alert("Erro ao ler a base de dados. Certifique-se de que os arquivos estão no diretório.");
+                alert("Erro ao ler a base de dados.");
             }
+        }
+
+        function createCustomOptions(arr, type) {
+            const list = document.getElementById(`list-${type}`);
+            let html = `<label class="flex items-center p-2 text-sm dark:text-slate-200 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 drop-item border-b dark:border-slate-700">
+                            <input type="checkbox" class="mr-3 cb-${type}" value="all" onchange="toggleAllDrop('${type}', this.checked)" checked> 
+                            <span class="item-text font-bold">Selecionar Tudo</span>
+                        </label>`;
+            arr.forEach(item => {
+                html += `<label class="flex items-center p-2 text-sm dark:text-slate-200 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 drop-item">
+                            <input type="checkbox" class="mr-3 cb-${type}" value="${item}" onchange="updateDropSelection('${type}')" checked>
+                            <span class="item-text truncate" title="${item}">${item}</span>
+                        </label>`;
+            });
+            list.innerHTML = html;
         }
 
         function populateDropdowns() {
@@ -208,40 +339,56 @@
             const methods = [...new Set(rawData.map(d => d.method))].sort();
             const domains = [...new Set(rawData.map(d => d.domain))].sort();
 
-            const createOptions = (arr, id) => {
-                const select = document.getElementById(id);
-                select.innerHTML = '<option value="all">Todos</option>';
-                arr.forEach(item => { select.innerHTML += `<option value="${item}">${item}</option>`; });
-            };
+            createCustomOptions(methods, 'Method');
+            createCustomOptions(courses, 'Course');
+            createCustomOptions(domains, 'Domain');
 
-            createOptions(courses, 'filterCourse');
-            createOptions(methods, 'filterMethod');
-            createOptions(domains, 'filterDomain');
+            // Status Options (Fixo)
+            document.getElementById('list-Status').innerHTML = `
+                <label class="flex items-center p-2 text-sm dark:text-slate-200 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 drop-item border-b dark:border-slate-700">
+                    <input type="checkbox" class="mr-3 cb-Status" value="all" onchange="toggleAllDrop('Status', this.checked)" checked> 
+                    <span class="item-text font-bold">Selecionar Tudo</span>
+                </label>
+                <label class="flex items-center p-2 text-sm dark:text-slate-200 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 drop-item">
+                    <input type="checkbox" class="mr-3 cb-Status" value="Completed" onchange="updateDropSelection('Status')" checked> 
+                    <span class="item-text">Concluído ✅</span>
+                </label>
+                <label class="flex items-center p-2 text-sm dark:text-slate-200 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 drop-item">
+                    <input type="checkbox" class="mr-3 cb-Status" value="Enrolled" onchange="updateDropSelection('Status')" checked> 
+                    <span class="item-text">Inscrito 📝</span>
+                </label>
+            `;
         }
 
         function applyFilters() {
-            const courseFilter = document.getElementById('filterCourse').value;
-            const methodFilter = document.getElementById('filterMethod').value;
-            const domainFilter = document.getElementById('filterDomain').value;
-            const statusFilter = document.getElementById('filterStatus').value;
+            const courseFilters = getSelectedValues('Course');
+            const methodFilters = getSelectedValues('Method');
+            const domainFilters = getSelectedValues('Domain');
+            const statusFilters = getSelectedValues('Status');
 
             filteredData = rawData.filter(d => {
-                return (courseFilter === 'all' || d.course === courseFilter) &&
-                       (methodFilter === 'all' || d.method === methodFilter) &&
-                       (domainFilter === 'all' || d.domain === domainFilter) &&
-                       (statusFilter === 'all' || d.status === statusFilter);
+                const mCourse = courseFilters === 'all' || courseFilters.includes(d.course);
+                const mMethod = methodFilters === 'all' || methodFilters.includes(d.method);
+                const mDomain = domainFilters === 'all' || domainFilters.includes(d.domain);
+                const mStatus = statusFilters === 'all' || statusFilters.includes(d.status);
+                return mCourse && mMethod && mDomain && mStatus;
             });
 
             updateKPIs();
             updateCharts();
-            updateTable(); // AQUI ESTÁ A MUDANÇA (2): Chamada da Tabela
+            updateTable();
         }
 
         function resetFilters() {
-            document.getElementById('filterCourse').value = 'all';
-            document.getElementById('filterMethod').value = 'all';
-            document.getElementById('filterDomain').value = 'all';
-            document.getElementById('filterStatus').value = 'all';
+            ['Method', 'Course', 'Domain', 'Status'].forEach(type => {
+                const cbs = document.querySelectorAll(`.cb-${type}`);
+                cbs.forEach(cb => cb.checked = true);
+                document.getElementById(`label-${type}`).innerText = "Todos selecionados";
+                const input = document.querySelector(`#drop-${type} input[type="text"]`);
+                if(input) { input.value = ''; filterDropList(`drop-${type}`, ''); }
+            });
+            const tSearch = document.getElementById('tableSearch');
+            if(tSearch) tSearch.value = '';
             applyFilters();
         }
 
@@ -271,7 +418,6 @@
             const isDark = document.documentElement.classList.contains('dark');
             const textColor = isDark ? '#cbd5e1' : '#475569';
 
-            // --- 1. Gráfico Volume de Cursos ---
             const courseCounts = {};
             filteredData.forEach(d => { courseCounts[d.course] = (courseCounts[d.course] || 0) + 1; });
             const sortedCourses = Object.entries(courseCounts).sort((a,b)=>b[1]-a[1]).slice(0, 7);
@@ -283,13 +429,9 @@
                     labels: sortedCourses.map(i => i[0].length > 25 ? i[0].substring(0, 25) + '...' : i[0]),
                     datasets: [{ label: 'Transações', data: sortedCourses.map(i => i[1]), backgroundColor: '#005eb8', borderRadius: 4 }]
                 },
-                options: {
-                    indexAxis: 'y', plugins: { legend: { display: false } },
-                    scales: { x: { ticks: { color: textColor } }, y: { ticks: { color: textColor, font: { size: 10 } } } }
-                }
+                options: { indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { ticks: { color: textColor } }, y: { ticks: { color: textColor, font: { size: 10 } } } } }
             });
 
-            // --- 2. Gráfico Público Alvo ---
             const domainCounts = {};
             filteredData.forEach(d => { domainCounts[d.domain] = (domainCounts[d.domain] || 0) + 1; });
 
@@ -303,9 +445,7 @@
                 options: { maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: textColor } } } }
             });
 
-            // --- 3. AQUI ESTÁ A MUDANÇA (3): Gráfico de Lead Time ---
             const userCourse = {};
-            // Mapeia entrada e conclusão para a mesma pessoa no mesmo curso
             rawData.forEach(d => {
                 if(!d.date || d.participantId === '') return;
                 const key = d.participantId + '|' + d.course;
@@ -338,13 +478,9 @@
                     labels: sortedLeadTimes.map(i => i[0].length > 25 ? i[0].substring(0,25)+'...' : i[0]),
                     datasets: [{ label: 'Média (Dias)', data: sortedLeadTimes.map(i => i[1]), backgroundColor: '#f59e0b', borderRadius: 4 }]
                 },
-                options: {
-                    indexAxis: 'y', plugins: { legend: { display: false } },
-                    scales: { x: { ticks: { color: textColor } }, y: { ticks: { color: textColor, font: { size: 10 } } } }
-                }
+                options: { indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { ticks: { color: textColor } }, y: { ticks: { color: textColor, font: { size: 10 } } } } }
             });
 
-            // --- 4. AQUI ESTÁ A MUDANÇA (4): Mapa de Calor HTML ---
             const months = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
             const domainsFilter = [...new Set(filteredData.map(d => d.domain))].sort();
             
@@ -352,7 +488,6 @@
             domainsFilter.forEach(d => { matrix[d] = new Array(12).fill(0); });
 
             let maxHeatVal = 0;
-            // Considerando apenas Concluídos para a Sazonalidade
             filteredData.filter(d => d.status === 'Completed' && d.date).forEach(d => {
                 const m = d.date.getMonth();
                 if(matrix[d.domain]) {
@@ -370,7 +505,6 @@
                 for(let m=0; m<12; m++) {
                     const val = matrix[d][m];
                     const intensity = maxHeatVal > 0 ? (val / maxHeatVal) : 0;
-                    // Escala de transparência azul baseada na intensidade (volume)
                     const alpha = intensity > 0 ? 0.15 + (intensity * 0.85) : 0.05;
                     const color = val > 0 ? (intensity > 0.4 ? 'white' : 'black') : 'transparent';
                     const displayVal = val > 0 ? val : '';
@@ -382,24 +516,36 @@
             document.getElementById('heatmapContainer').innerHTML = heatHtml;
         }
 
-        // --- AQUI ESTÁ A MUDANÇA (2): Tabela ---
         function updateTable() {
             const tbody = document.getElementById('tableBody');
             tbody.innerHTML = '';
             
-            // Limitando a 100 registros para alta performance do Front-End
-            const displayData = filteredData.slice(0, 100);
+            const searchTerm = document.getElementById('tableSearch') ? document.getElementById('tableSearch').value.toLowerCase() : '';
+            
+            let displayData = filteredData;
+            
+            // Lógica da Barra de Pesquisa de Participantes
+            if (searchTerm) {
+                displayData = displayData.filter(d => 
+                    (d.fcp && d.fcp.toLowerCase().includes(searchTerm)) ||
+                    (d.participantId && d.participantId.toLowerCase().includes(searchTerm)) ||
+                    (d.name && d.name.toLowerCase().includes(searchTerm)) ||
+                    (d.email && d.email.toLowerCase().includes(searchTerm))
+                );
+            }
+            
+            displayData = displayData.slice(0, 100);
             
             if(displayData.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-500">Nenhum registro encontrado.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-slate-500">Nenhum registro encontrado.</td></tr>`;
                 return;
             }
 
             displayData.forEach(d => {
                 const dateStr = d.date ? d.date.toLocaleDateString('pt-BR') : '-';
                 const statusBadge = d.status === 'Completed' 
-                    ? `<span class="text-[9px] ml-2 px-1.5 py-0.5 bg-green-100 text-green-700 rounded border border-green-200 uppercase font-bold">Concluído</span>`
-                    : `<span class="text-[9px] ml-2 px-1.5 py-0.5 bg-amber-100 text-amber-700 rounded border border-amber-200 uppercase font-bold">Inscrito</span>`;
+                    ? `<span class="text-[9px] px-1.5 py-0.5 bg-green-100 text-green-700 rounded border border-green-200 uppercase font-bold">Concluído</span>`
+                    : `<span class="text-[9px] px-1.5 py-0.5 bg-amber-100 text-amber-700 rounded border border-amber-200 uppercase font-bold">Inscrito</span>`;
 
                 tbody.innerHTML += `
                     <tr class="border-b border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition">
@@ -408,7 +554,8 @@
                         <td class="p-3 text-sm text-slate-700 dark:text-slate-300">${d.name || '-'}</td>
                         <td class="p-3 text-sm text-slate-700 dark:text-slate-300">${d.email || '-'}</td>
                         <td class="p-3 text-sm text-slate-700 dark:text-slate-300 truncate max-w-[200px]" title="${d.course}">${d.course}</td>
-                        <td class="p-3 text-sm text-slate-700 dark:text-slate-300 flex items-center">${dateStr} ${statusBadge}</td>
+                        <td class="p-3 text-sm text-center">${statusBadge}</td>
+                        <td class="p-3 text-sm text-slate-700 dark:text-slate-300 text-right">${dateStr}</td>
                     </tr>
                 `;
             });
