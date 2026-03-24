@@ -34,12 +34,9 @@
             <h1 class="text-2xl font-bold text-primary dark:text-blue-400">📊 Dashboard Mais Conectados</h1>
             <p class="text-slate-500 dark:text-slate-400 text-sm">Gestão Estratégica de Treinamentos</p>
         </div>
-        <div class="flex items-center gap-3">
-            <label class="bg-primary text-white px-4 py-2.5 rounded-lg hover:bg-blue-700 transition shadow-md font-medium text-sm cursor-pointer">
-                📂 Carregar Base (CSV/Excel)
-                <input type="file" id="fileInput" accept=".csv, .xlsx" class="hidden" onchange="handleFile(event)">
-            </label>
-            <button onclick="toggleTheme()" class="bg-slate-200 dark:bg-slate-700 p-2.5 rounded-lg text-lg">🌓</button>
+        <div class="flex items-center gap-4">
+            <span id="lastUpdateInfo" class="text-xs text-slate-500 dark:text-slate-400 font-medium bg-white dark:bg-slate-800 px-3 py-1.5 rounded shadow-sm border border-slate-200 dark:border-slate-700">Carregando dados...</span>
+            <button onclick="toggleTheme()" class="bg-slate-200 dark:bg-slate-700 p-2.5 rounded-lg text-lg hover:bg-slate-300 dark:hover:bg-slate-600 transition">🌓</button>
         </div>
     </header>
 
@@ -106,7 +103,7 @@
                 <canvas id="chartCourse"></canvas>
             </div>
             <div class="bg-white dark:bg-darkCard p-5 rounded-xl shadow-sm">
-                <h3 class="text-sm font-bold uppercase text-slate-700 dark:text-slate-300 mb-4">Público-Alvo (NOVO)</h3>
+                <h3 class="text-sm font-bold uppercase text-slate-700 dark:text-slate-300 mb-4">Público-Alvo</h3>
                 <div class="flex justify-center" style="height: 300px;">
                     <canvas id="chartDomain"></canvas>
                 </div>
@@ -120,19 +117,30 @@
         let filteredData = [];
         let charts = {};
 
-        // Lógica de Leitura e Limpeza de Dados (Data Cleansing)
-        function handleFile(e) {
-            const file = e.target.files[0];
-            if (!file) return;
+        // Inicia o carregamento assim que a tela abre
+        window.onload = carregarBaseAutomatica;
 
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const data = new Uint8Array(e.target.result);
-                const workbook = XLSX.read(data, {type: 'array'});
-                const sheet = workbook.Sheets[workbook.SheetNames[0]];
-                const json = XLSX.utils.sheet_to_json(sheet, { defval: "" });
+        // Lógica Original de Leitura Direto do Repositório/Diretório
+        async function carregarBaseAutomatica() {
+            try {
+                let response = await fetch('dados.xlsx');
+                if (!response.ok) response = await fetch('dados.csv');
+                if (!response.ok) throw new Error("Arquivo não encontrado");
 
-                // Processamento de Limpeza (Trim)
+                // Coletar data de modificação, assim como no original
+                const lastMod = response.headers.get('Last-Modified');
+                if (lastMod) {
+                    const date = new Date(lastMod);
+                    document.getElementById('lastUpdateInfo').textContent = `Atualizado: ${date.toLocaleString('pt-BR')}`;
+                } else {
+                    document.getElementById('lastUpdateInfo').textContent = `Base Carregada`;
+                }
+
+                const arrayBuffer = await response.arrayBuffer();
+                const workbook = XLSX.read(new Uint8Array(arrayBuffer), { type: 'array', cellDates: true });
+                const json = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { defval: "" });
+
+                // Processamento de Limpeza de Nomenclatura
                 rawData = json.map(row => ({
                     course: (row['Course Name'] || 'Sem Nome').trim(),
                     method: (row['Training Method'] || 'N/A').trim(),
@@ -143,8 +151,12 @@
                 document.getElementById('dashboardContent').classList.remove('hidden');
                 populateDropdowns();
                 applyFilters();
-            };
-            reader.readAsArrayBuffer(file);
+            } catch (error) {
+                console.error("Erro ao carregar os dados:", error);
+                document.getElementById('lastUpdateInfo').textContent = "Erro ao carregar base";
+                document.getElementById('lastUpdateInfo').classList.add("text-red-500");
+                alert("Erro ao ler a base de dados. Certifique-se de que os arquivos estão no diretório.");
+            }
         }
 
         // Preenche os filtros baseados nos dados unicos
@@ -194,7 +206,6 @@
             const enrolled = filteredData.filter(d => d.status === 'Enrolled').length;
             const completed = filteredData.filter(d => d.status === 'Completed').length;
 
-            // Animação de números simples
             document.getElementById('kpiTotal').innerText = total.toLocaleString('pt-BR');
             document.getElementById('kpiEnrolled').innerText = enrolled.toLocaleString('pt-BR');
             document.getElementById('kpiCompleted').innerText = completed.toLocaleString('pt-BR');
@@ -202,8 +213,6 @@
             // Lógica do Modo Meta (Conversão)
             let convRate = 0;
             if (enrolled > 0 || completed > 0) {
-               // A conta ideal de conversão de funil é Concluídos / (Inscritos + Concluídos daquele recorte) ou simplesmente concluidos do total da base.
-               // Como o status muda de Enrolled para Completed, o Total = Enrolled + Completed (em um retrato estático).
                convRate = (completed / total) * 100;
             }
             
@@ -225,7 +234,6 @@
             // Agregação para Cursos
             const courseCounts = {};
             filteredData.forEach(d => { courseCounts[d.course] = (courseCounts[d.course] || 0) + 1; });
-            // Pegar os top 7 para não poluir o gráfico
             const sortedCourses = Object.entries(courseCounts).sort((a,b)=>b[1]-a[1]).slice(0, 7);
 
             // Agregação para Público-Alvo (Domain)
@@ -246,7 +254,7 @@
                     }]
                 },
                 options: {
-                    indexAxis: 'y', // Barra Horizontal para melhor leitura dos textos
+                    indexAxis: 'y',
                     plugins: { legend: { display: false } },
                     scales: { 
                         x: { ticks: { color: textColor } },
