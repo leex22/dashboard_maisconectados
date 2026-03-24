@@ -193,17 +193,30 @@
 
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            
+            <div class="bg-white dark:bg-darkCard p-5 rounded-xl shadow-sm border-l-4 border-purple-500 flex flex-col justify-center">
+                <div class="flex items-center gap-1 group relative cursor-pointer w-fit mb-1">
+                    <p class="text-xs text-slate-500 font-bold uppercase">Alunos Únicos</p>
+                    <span class="text-slate-400 text-xs">ⓘ</span>
+                    <div class="absolute bottom-full left-0 mb-1 hidden group-hover:block w-56 p-2.5 bg-slate-800 text-white text-[11px] leading-tight font-normal normal-case tracking-normal rounded shadow-xl z-50">
+                        Quantidade exata de pessoas diferentes que realizaram alguma transação, independentemente de quantos cursos fizeram.
+                    </div>
+                </div>
+                <h2 id="kpiUnique" class="text-3xl font-bold text-slate-800 dark:text-white">0</h2>
+            </div>
+
             <div class="bg-white dark:bg-darkCard p-5 rounded-xl shadow-sm border-l-4 border-blue-500 flex flex-col justify-center">
                 <div class="flex items-center gap-1 group relative cursor-pointer w-fit mb-1">
                     <p class="text-xs text-slate-500 font-bold uppercase">Total de Transações</p>
                     <span class="text-slate-400 text-xs">ⓘ</span>
                     <div class="absolute bottom-full left-0 mb-1 hidden group-hover:block w-56 p-2.5 bg-slate-800 text-white text-[11px] leading-tight font-normal normal-case tracking-normal rounded shadow-xl z-50">
-                        É a soma de todas as movimentações no sistema. Mostra o volume geral de uso da plataforma.
+                        É a soma de todas as movimentações no sistema (inscrições e conclusões). Mostra o volume geral de uso da plataforma.
                     </div>
                 </div>
                 <h2 id="kpiTotal" class="text-3xl font-bold text-slate-800 dark:text-white">0</h2>
             </div>
+            
             <div class="bg-white dark:bg-darkCard p-5 rounded-xl shadow-sm border-l-4 border-amber-500 flex flex-col justify-center">
                 <div class="flex items-center gap-1 group relative cursor-pointer w-fit mb-1">
                     <p class="text-xs text-slate-500 font-bold uppercase">Inscritos (Enrolled)</p>
@@ -214,6 +227,7 @@
                 </div>
                 <h2 id="kpiEnrolled" class="text-3xl font-bold text-slate-800 dark:text-white">0</h2>
             </div>
+            
             <div class="bg-white dark:bg-darkCard p-5 rounded-xl shadow-sm border-l-4 border-green-500 flex flex-col justify-center">
                 <div class="flex items-center gap-1 group relative cursor-pointer w-fit mb-1">
                     <p class="text-xs text-slate-500 font-bold uppercase">Concluídos (Completed)</p>
@@ -499,10 +513,19 @@
             const total = filteredData.length;
             const enrolled = filteredData.filter(d => d.status === 'Enrolled').length;
             const completed = filteredData.filter(d => d.status === 'Completed').length;
+            
+            // Lógica do Novo KPI (Alunos Únicos)
+            const uniqueSet = new Set();
+            filteredData.forEach(d => {
+                const id = d.email || d.participantId || d.name;
+                if(id) uniqueSet.add(id);
+            });
+            const uniqueStudents = uniqueSet.size;
 
             document.getElementById('kpiTotal').innerText = total.toLocaleString('pt-BR');
             document.getElementById('kpiEnrolled').innerText = enrolled.toLocaleString('pt-BR');
             document.getElementById('kpiCompleted').innerText = completed.toLocaleString('pt-BR');
+            document.getElementById('kpiUnique').innerText = uniqueStudents.toLocaleString('pt-BR'); // Exibe o novo card
 
             let convRate = 0;
             if (enrolled > 0 || completed > 0) convRate = (completed / total) * 100;
