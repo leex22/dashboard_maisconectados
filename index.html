@@ -51,7 +51,8 @@
         <header class="max-w-7xl mx-auto mb-6 flex flex-col md:flex-row justify-between items-center gap-4">
             <div>
                 <h1 class="text-2xl font-bold text-primary dark:text-blue-400">📊 Dashboard Mais Conectados</h1>
-                <p class="text-slate-500 dark:text-slate-400 text-sm">Gestão Estratégica de Treinamentos</p>
+                <p class="text-slate-500 dark:text-slate-400 text-sm">Gestão de Cursos</p>
+                <p id="lastUpdateInfo" class="text-xs text-slate-400 dark:text-slate-500 mt-1">Carregando dados...</p>
             </div>
             <div class="flex items-center gap-3 flex-wrap justify-end">
                 <button onclick="exportExcel()" class="bg-green-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-green-700 transition flex items-center gap-1.5 shadow-sm">
@@ -60,7 +61,6 @@
                 <button onclick="exportPDF()" class="bg-red-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-red-700 transition flex items-center gap-1.5 shadow-sm">
                     📊 PDF
                 </button>
-                <span id="lastUpdateInfo" class="text-xs text-slate-500 dark:text-slate-400 font-medium bg-white dark:bg-slate-800 px-3 py-1.5 rounded shadow-sm border border-slate-200 dark:border-slate-700">Carregando...</span>
                 <button onclick="toggleTheme()" class="bg-slate-200 dark:bg-slate-700 p-2.5 rounded-lg text-lg hover:bg-slate-300 dark:hover:bg-slate-600 transition">🌓</button>
             </div>
         </header>
@@ -200,7 +200,7 @@
                         <p class="text-xs text-slate-500 font-bold uppercase">Alunos Únicos</p>
                         <span class="text-slate-400 text-xs">ⓘ</span>
                         <div class="absolute bottom-full left-0 mb-1 hidden group-hover:block w-56 p-2.5 bg-slate-800 text-white text-[11px] leading-tight font-normal normal-case tracking-normal rounded shadow-xl z-50">
-                            Quantidade exata de pessoas diferentes que realizaram alguma transação, independentemente de quantos cursos fizeram.
+                            Quantidade exata de alunos cadastrados na plataforma, independentemente de em quantos cursos diferentes eles se matricularam.
                         </div>
                     </div>
                     <h2 id="kpiUnique" class="text-3xl font-bold text-slate-800 dark:text-white">0</h2>
@@ -211,7 +211,7 @@
                         <p class="text-xs text-slate-500 font-bold uppercase">Total de inscrições</p>
                         <span class="text-slate-400 text-xs">ⓘ</span>
                         <div class="absolute bottom-full left-0 mb-1 hidden group-hover:block w-56 p-2.5 bg-slate-800 text-white text-[11px] leading-tight font-normal normal-case tracking-normal rounded shadow-xl z-50">
-                            É a soma de todas as movimentações no sistema (inscrições ativas e concluídas). Volume bruto do dashboard.
+                            A soma total de todas as matrículas realizadas nos cursos (incluindo alunos em andamento e já concluídos). Representa o volume bruto de matrículas.
                         </div>
                     </div>
                     <h2 id="kpiTotal" class="text-3xl font-bold text-slate-800 dark:text-white">0</h2>
@@ -741,7 +741,6 @@
                         datalabels: { color: '#000', font: { weight: 'bold', size: 10 }, formatter: (value) => value + ' dias' },
                         tooltip: { callbacks: { label: (context) => ` ${context.raw} dias em média` } }
                     }, 
-                    // Mudança Clean: Removidas as linhas de grade (gridlines)
                     scales: { 
                         x: { grid: { display: false }, ticks: { color: textColor } }, 
                         y: { grid: { display: false }, ticks: { color: textColor, font: { size: 10 } } } 
@@ -749,7 +748,6 @@
                 }
             });
 
-            // Mapa de Calor (Visual Clean - Sem Bordas de Célula)
             const months = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
             const domainsFilter = [...new Set(filteredData.map(d => d.domain))].sort();
             
