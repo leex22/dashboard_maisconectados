@@ -28,6 +28,8 @@
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         .dark .custom-scrollbar::-webkit-scrollbar-thumb { background: #475569; }
+        /* Suporte ao modo escuro nos inputs de data */
+        .dark input[type="date"] { color-scheme: dark; }
     </style>
 </head>
 <body class="bg-slate-100 text-slate-900 dark:bg-darkBg dark:text-slate-100 p-4 md:p-8">
@@ -56,91 +58,143 @@
             </div>
         </div>
 
-        <div class="bg-white dark:bg-darkCard p-5 rounded-xl shadow-sm border-t-4 border-primary mb-6">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-sm font-bold uppercase tracking-wider">🔍 Filtros Inteligentes</h3>
-                <button onclick="resetFilters()" class="text-xs bg-red-100 text-red-600 px-3 py-1.5 rounded font-bold uppercase hover:bg-red-200 transition">Limpar Filtros</button>
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-6">
+            
+            <div class="lg:col-span-3 bg-white dark:bg-darkCard p-5 rounded-xl shadow-sm border-t-4 border-primary">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-sm font-bold uppercase tracking-wider">🔍 Filtros Inteligentes</h3>
+                    <button onclick="resetFilters()" class="text-xs bg-red-100 text-red-600 px-3 py-1.5 rounded font-bold uppercase hover:bg-red-200 transition">Limpar Filtros</button>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    
+                    <div class="dropdown-wrapper relative">
+                        <label class="label-filter">Método de Treinamento</label>
+                        <button type="button" onclick="toggleDrop('drop-Method', event)" class="w-full border border-slate-300 dark:border-slate-600 rounded-md p-2 text-left text-sm flex justify-between items-center bg-transparent dark:text-white focus:outline-none">
+                            <span id="label-Method" class="truncate">Todos selecionados</span>
+                            <span class="text-[10px] ml-2">▼</span>
+                        </button>
+                        <div id="drop-Method" class="dropdown-menu hidden absolute z-50 w-full mt-1 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-md shadow-xl flex flex-col max-h-64">
+                            <div class="p-2 border-b dark:border-slate-700 sticky top-0 bg-white dark:bg-slate-800 rounded-t-md">
+                                <div class="relative">
+                                    <span class="absolute left-2.5 top-1.5 text-xs">🔍</span>
+                                    <input type="text" class="w-full pl-7 pr-2 py-1.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded text-xs dark:text-white focus:outline-none" placeholder="Pesquisar..." onkeyup="filterDropList('drop-Method', this.value)">
+                                </div>
+                            </div>
+                            <div class="p-1 overflow-y-auto flex flex-col custom-scrollbar" id="list-Method"></div>
+                        </div>
+                    </div>
+
+                    <div class="dropdown-wrapper relative">
+                        <label class="label-filter">Curso</label>
+                        <button type="button" onclick="toggleDrop('drop-Course', event)" class="w-full border border-slate-300 dark:border-slate-600 rounded-md p-2 text-left text-sm flex justify-between items-center bg-transparent dark:text-white focus:outline-none">
+                            <span id="label-Course" class="truncate">Todos selecionados</span>
+                            <span class="text-[10px] ml-2">▼</span>
+                        </button>
+                        <div id="drop-Course" class="dropdown-menu hidden absolute z-50 w-full mt-1 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-md shadow-xl flex flex-col max-h-64">
+                            <div class="p-2 border-b dark:border-slate-700 sticky top-0 bg-white dark:bg-slate-800 rounded-t-md">
+                                <div class="relative">
+                                    <span class="absolute left-2.5 top-1.5 text-xs">🔍</span>
+                                    <input type="text" class="w-full pl-7 pr-2 py-1.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded text-xs dark:text-white focus:outline-none" placeholder="Pesquisar..." onkeyup="filterDropList('drop-Course', this.value)">
+                                </div>
+                            </div>
+                            <div class="p-1 overflow-y-auto flex flex-col custom-scrollbar" id="list-Course"></div>
+                        </div>
+                    </div>
+
+                    <div class="dropdown-wrapper relative">
+                        <label class="label-filter">Público-Alvo</label>
+                        <button type="button" onclick="toggleDrop('drop-Domain', event)" class="w-full border border-slate-300 dark:border-slate-600 rounded-md p-2 text-left text-sm flex justify-between items-center bg-transparent dark:text-white focus:outline-none">
+                            <span id="label-Domain" class="truncate">Todos selecionados</span>
+                            <span class="text-[10px] ml-2">▼</span>
+                        </button>
+                        <div id="drop-Domain" class="dropdown-menu hidden absolute z-50 w-full mt-1 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-md shadow-xl flex flex-col max-h-64">
+                            <div class="p-2 border-b dark:border-slate-700 sticky top-0 bg-white dark:bg-slate-800 rounded-t-md">
+                                <div class="relative">
+                                    <span class="absolute left-2.5 top-1.5 text-xs">🔍</span>
+                                    <input type="text" class="w-full pl-7 pr-2 py-1.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded text-xs dark:text-white focus:outline-none" placeholder="Pesquisar..." onkeyup="filterDropList('drop-Domain', this.value)">
+                                </div>
+                            </div>
+                            <div class="p-1 overflow-y-auto flex flex-col custom-scrollbar" id="list-Domain"></div>
+                        </div>
+                    </div>
+
+                    <div class="dropdown-wrapper relative">
+                        <label class="label-filter">Status</label>
+                        <button type="button" onclick="toggleDrop('drop-Status', event)" class="w-full border border-slate-300 dark:border-slate-600 rounded-md p-2 text-left text-sm flex justify-between items-center bg-transparent dark:text-white focus:outline-none">
+                            <span id="label-Status" class="truncate">Todos selecionados</span>
+                            <span class="text-[10px] ml-2">▼</span>
+                        </button>
+                        <div id="drop-Status" class="dropdown-menu hidden absolute z-50 w-full mt-1 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-md shadow-xl flex flex-col max-h-64">
+                            <div class="p-2 border-b dark:border-slate-700 sticky top-0 bg-white dark:bg-slate-800 rounded-t-md">
+                                <div class="relative">
+                                    <span class="absolute left-2.5 top-1.5 text-xs">🔍</span>
+                                    <input type="text" class="w-full pl-7 pr-2 py-1.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded text-xs dark:text-white focus:outline-none" placeholder="Pesquisar..." onkeyup="filterDropList('drop-Status', this.value)">
+                                </div>
+                            </div>
+                            <div class="p-1 overflow-y-auto flex flex-col custom-scrollbar" id="list-Status"></div>
+                        </div>
+                    </div>
+
+                    <div class="dropdown-wrapper relative">
+                        <label class="label-filter">Facilitador</label>
+                        <button type="button" onclick="toggleDrop('drop-Facilitator', event)" class="w-full border border-slate-300 dark:border-slate-600 rounded-md p-2 text-left text-sm flex justify-between items-center bg-transparent dark:text-white focus:outline-none">
+                            <span id="label-Facilitator" class="truncate">Todos selecionados</span>
+                            <span class="text-[10px] ml-2">▼</span>
+                        </button>
+                        <div id="drop-Facilitator" class="dropdown-menu hidden absolute z-50 w-full mt-1 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-md shadow-xl flex flex-col max-h-64">
+                            <div class="p-2 border-b dark:border-slate-700 sticky top-0 bg-white dark:bg-slate-800 rounded-t-md">
+                                <div class="relative">
+                                    <span class="absolute left-2.5 top-1.5 text-xs">🔍</span>
+                                    <input type="text" class="w-full pl-7 pr-2 py-1.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded text-xs dark:text-white focus:outline-none" placeholder="Pesquisar..." onkeyup="filterDropList('drop-Facilitator', this.value)">
+                                </div>
+                            </div>
+                            <div class="p-1 overflow-y-auto flex flex-col custom-scrollbar" id="list-Facilitator"></div>
+                        </div>
+                    </div>
+
+                    <div class="dropdown-wrapper relative">
+                        <label class="label-filter">Cluster</label>
+                        <button type="button" onclick="toggleDrop('drop-Cluster', event)" class="w-full border border-slate-300 dark:border-slate-600 rounded-md p-2 text-left text-sm flex justify-between items-center bg-transparent dark:text-white focus:outline-none">
+                            <span id="label-Cluster" class="truncate">Todos selecionados</span>
+                            <span class="text-[10px] ml-2">▼</span>
+                        </button>
+                        <div id="drop-Cluster" class="dropdown-menu hidden absolute z-50 w-full mt-1 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-md shadow-xl flex flex-col max-h-64">
+                            <div class="p-2 border-b dark:border-slate-700 sticky top-0 bg-white dark:bg-slate-800 rounded-t-md">
+                                <div class="relative">
+                                    <span class="absolute left-2.5 top-1.5 text-xs">🔍</span>
+                                    <input type="text" class="w-full pl-7 pr-2 py-1.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded text-xs dark:text-white focus:outline-none" placeholder="Pesquisar..." onkeyup="filterDropList('drop-Cluster', this.value)">
+                                </div>
+                            </div>
+                            <div class="p-1 overflow-y-auto flex flex-col custom-scrollbar" id="list-Cluster"></div>
+                        </div>
+                    </div>
+
+                </div>
             </div>
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                
-                <div class="dropdown-wrapper relative">
-                    <label class="label-filter">Método de Treinamento</label>
-                    <button type="button" onclick="toggleDrop('drop-Method', event)" class="w-full border border-slate-300 dark:border-slate-600 rounded-md p-2 text-left text-sm flex justify-between items-center bg-transparent dark:text-white focus:outline-none">
-                        <span id="label-Method" class="truncate">Todos selecionados</span>
-                        <span class="text-[10px] ml-2">▼</span>
-                    </button>
-                    <div id="drop-Method" class="dropdown-menu hidden absolute z-50 w-full mt-1 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-md shadow-xl flex flex-col max-h-64">
-                        <div class="p-2 border-b dark:border-slate-700 sticky top-0 bg-white dark:bg-slate-800 rounded-t-md">
-                            <div class="relative">
-                                <span class="absolute left-2.5 top-1.5 text-xs">🔍</span>
-                                <input type="text" class="w-full pl-7 pr-2 py-1.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded text-xs dark:text-white focus:outline-none" placeholder="Pesquisar..." onkeyup="filterDropList('drop-Method', this.value)">
-                            </div>
-                        </div>
-                        <div class="p-1 overflow-y-auto flex flex-col custom-scrollbar" id="list-Method"></div>
+
+            <div class="bg-white dark:bg-darkCard p-5 rounded-xl shadow-sm border-t-4 border-indigo-500 flex flex-col h-full">
+                <h3 class="text-sm font-bold uppercase tracking-wider mb-4">📅 Filtro de Data</h3>
+                <div class="flex flex-col gap-4 flex-grow">
+                    <div>
+                        <label class="label-filter">Data Inicial</label>
+                        <input type="date" id="filterDateStart" onchange="applyFilters()" class="w-full border border-slate-300 dark:border-slate-600 rounded-md p-2 text-sm bg-transparent dark:text-white focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="label-filter">Data Final</label>
+                        <input type="date" id="filterDateEnd" onchange="applyFilters()" class="w-full border border-slate-300 dark:border-slate-600 rounded-md p-2 text-sm bg-transparent dark:text-white focus:outline-none">
                     </div>
                 </div>
-
-                <div class="dropdown-wrapper relative">
-                    <label class="label-filter">Curso</label>
-                    <button type="button" onclick="toggleDrop('drop-Course', event)" class="w-full border border-slate-300 dark:border-slate-600 rounded-md p-2 text-left text-sm flex justify-between items-center bg-transparent dark:text-white focus:outline-none">
-                        <span id="label-Course" class="truncate">Todos selecionados</span>
-                        <span class="text-[10px] ml-2">▼</span>
-                    </button>
-                    <div id="drop-Course" class="dropdown-menu hidden absolute z-50 w-full mt-1 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-md shadow-xl flex flex-col max-h-64">
-                        <div class="p-2 border-b dark:border-slate-700 sticky top-0 bg-white dark:bg-slate-800 rounded-t-md">
-                            <div class="relative">
-                                <span class="absolute left-2.5 top-1.5 text-xs">🔍</span>
-                                <input type="text" class="w-full pl-7 pr-2 py-1.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded text-xs dark:text-white focus:outline-none" placeholder="Pesquisar..." onkeyup="filterDropList('drop-Course', this.value)">
-                            </div>
-                        </div>
-                        <div class="p-1 overflow-y-auto flex flex-col custom-scrollbar" id="list-Course"></div>
-                    </div>
-                </div>
-
-                <div class="dropdown-wrapper relative">
-                    <label class="label-filter">Público-Alvo (Permissões)</label>
-                    <button type="button" onclick="toggleDrop('drop-Domain', event)" class="w-full border border-slate-300 dark:border-slate-600 rounded-md p-2 text-left text-sm flex justify-between items-center bg-transparent dark:text-white focus:outline-none">
-                        <span id="label-Domain" class="truncate">Todos selecionados</span>
-                        <span class="text-[10px] ml-2">▼</span>
-                    </button>
-                    <div id="drop-Domain" class="dropdown-menu hidden absolute z-50 w-full mt-1 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-md shadow-xl flex flex-col max-h-64">
-                        <div class="p-2 border-b dark:border-slate-700 sticky top-0 bg-white dark:bg-slate-800 rounded-t-md">
-                            <div class="relative">
-                                <span class="absolute left-2.5 top-1.5 text-xs">🔍</span>
-                                <input type="text" class="w-full pl-7 pr-2 py-1.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded text-xs dark:text-white focus:outline-none" placeholder="Pesquisar..." onkeyup="filterDropList('drop-Domain', this.value)">
-                            </div>
-                        </div>
-                        <div class="p-1 overflow-y-auto flex flex-col custom-scrollbar" id="list-Domain"></div>
-                    </div>
-                </div>
-
-                <div class="dropdown-wrapper relative">
-                    <label class="label-filter">Status</label>
-                    <button type="button" onclick="toggleDrop('drop-Status', event)" class="w-full border border-slate-300 dark:border-slate-600 rounded-md p-2 text-left text-sm flex justify-between items-center bg-transparent dark:text-white focus:outline-none">
-                        <span id="label-Status" class="truncate">Todos selecionados</span>
-                        <span class="text-[10px] ml-2">▼</span>
-                    </button>
-                    <div id="drop-Status" class="dropdown-menu hidden absolute z-50 w-full mt-1 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-md shadow-xl flex flex-col max-h-64">
-                        <div class="p-2 border-b dark:border-slate-700 sticky top-0 bg-white dark:bg-slate-800 rounded-t-md">
-                            <div class="relative">
-                                <span class="absolute left-2.5 top-1.5 text-xs">🔍</span>
-                                <input type="text" class="w-full pl-7 pr-2 py-1.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded text-xs dark:text-white focus:outline-none" placeholder="Pesquisar..." onkeyup="filterDropList('drop-Status', this.value)">
-                            </div>
-                        </div>
-                        <div class="p-1 overflow-y-auto flex flex-col custom-scrollbar" id="list-Status"></div>
-                    </div>
-                </div>
-
             </div>
+
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             <div class="bg-white dark:bg-darkCard p-5 rounded-xl shadow-sm border-l-4 border-blue-500 flex flex-col justify-center">
-                <p class="text-xs text-slate-500 font-bold uppercase">Total de Transações</p>
+                <p class="text-xs text-slate-500 font-bold uppercase">Total de inscrições</p>
                 <h2 id="kpiTotal" class="text-3xl font-bold text-slate-800 dark:text-white">0</h2>
             </div>
             <div class="bg-white dark:bg-darkCard p-5 rounded-xl shadow-sm border-l-4 border-amber-500 flex flex-col justify-center">
-                <p class="text-xs text-slate-500 font-bold uppercase">Inscritos (Enrolled)</p>
+                <p class="text-xs text-slate-500 font-bold uppercase">Em Andamento (Enrolled)</p>
                 <h2 id="kpiEnrolled" class="text-3xl font-bold text-slate-800 dark:text-white">0</h2>
             </div>
             <div class="bg-white dark:bg-darkCard p-5 rounded-xl shadow-sm border-l-4 border-green-500 flex flex-col justify-center">
@@ -176,16 +230,17 @@
         </div>
 
         <div class="bg-white dark:bg-darkCard p-5 rounded-xl shadow-sm mb-8 overflow-hidden">
-            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4">
-                <div>
+            <div class="mb-5">
+                <div class="flex items-center gap-3 mb-2">
                     <h3 class="text-sm font-bold uppercase text-slate-700 dark:text-slate-300">📋 Lista de Participantes</h3>
                     <span class="text-[10px] text-slate-500 block">Mostrando os 100 primeiros registros filtrados.</span>
                 </div>
-                <div class="relative w-full md:w-80">
-                    <span class="absolute left-3 top-2 text-sm">🔍</span>
+                <div class="relative w-full">
+                    <span class="absolute left-3 top-2.5 text-sm">🔍</span>
                     <input type="text" id="tableSearch" placeholder="Pesquisar FCP, ID, Nome ou Email..." class="w-full pl-9 pr-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg text-sm bg-slate-50 dark:bg-slate-700 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-primary" onkeyup="updateTable()">
                 </div>
             </div>
+            
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse">
                     <thead>
@@ -304,6 +359,8 @@
                         method: (row['Training Method'] || 'N/A').trim(),
                         domain: (row['PERMISSIONS'] || 'N/A').trim(), 
                         status: (row['ACTIVITY_CODE'] || '').trim(),
+                        facilitator: (row['Partnership Facilitator'] || 'N/A').trim(),
+                        cluster: (row['FCP_CLUSTER'] || 'N/A').trim(),
                         date: isNaN(parsedDate.getTime()) ? null : parsedDate
                     };
                 }).filter(row => row.status !== '');
@@ -338,10 +395,14 @@
             const courses = [...new Set(rawData.map(d => d.course))].sort();
             const methods = [...new Set(rawData.map(d => d.method))].sort();
             const domains = [...new Set(rawData.map(d => d.domain))].sort();
+            const facilitators = [...new Set(rawData.map(d => d.facilitator))].sort();
+            const clusters = [...new Set(rawData.map(d => d.cluster))].sort();
 
             createCustomOptions(methods, 'Method');
             createCustomOptions(courses, 'Course');
             createCustomOptions(domains, 'Domain');
+            createCustomOptions(facilitators, 'Facilitator');
+            createCustomOptions(clusters, 'Cluster');
 
             // Status Options (Fixo)
             document.getElementById('list-Status').innerHTML = `
@@ -365,13 +426,32 @@
             const methodFilters = getSelectedValues('Method');
             const domainFilters = getSelectedValues('Domain');
             const statusFilters = getSelectedValues('Status');
+            const facilitatorFilters = getSelectedValues('Facilitator');
+            const clusterFilters = getSelectedValues('Cluster');
+            
+            const dateStartVal = document.getElementById('filterDateStart').value;
+            const dateEndVal = document.getElementById('filterDateEnd').value;
+            const dateStart = dateStartVal ? new Date(dateStartVal) : null;
+            const dateEnd = dateEndVal ? new Date(dateEndVal) : null;
+            if (dateEnd) dateEnd.setHours(23, 59, 59, 999);
 
             filteredData = rawData.filter(d => {
                 const mCourse = courseFilters === 'all' || courseFilters.includes(d.course);
                 const mMethod = methodFilters === 'all' || methodFilters.includes(d.method);
                 const mDomain = domainFilters === 'all' || domainFilters.includes(d.domain);
                 const mStatus = statusFilters === 'all' || statusFilters.includes(d.status);
-                return mCourse && mMethod && mDomain && mStatus;
+                const mFacilitator = facilitatorFilters === 'all' || facilitatorFilters.includes(d.facilitator);
+                const mCluster = clusterFilters === 'all' || clusterFilters.includes(d.cluster);
+                
+                let mDate = true;
+                if (d.date) {
+                    if (dateStart && d.date < dateStart) mDate = false;
+                    if (dateEnd && d.date > dateEnd) mDate = false;
+                } else if (dateStart || dateEnd) {
+                    mDate = false;
+                }
+
+                return mCourse && mMethod && mDomain && mStatus && mFacilitator && mCluster && mDate;
             });
 
             updateKPIs();
@@ -380,15 +460,19 @@
         }
 
         function resetFilters() {
-            ['Method', 'Course', 'Domain', 'Status'].forEach(type => {
+            ['Method', 'Course', 'Domain', 'Status', 'Facilitator', 'Cluster'].forEach(type => {
                 const cbs = document.querySelectorAll(`.cb-${type}`);
                 cbs.forEach(cb => cb.checked = true);
                 document.getElementById(`label-${type}`).innerText = "Todos selecionados";
                 const input = document.querySelector(`#drop-${type} input[type="text"]`);
                 if(input) { input.value = ''; filterDropList(`drop-${type}`, ''); }
             });
+            document.getElementById('filterDateStart').value = '';
+            document.getElementById('filterDateEnd').value = '';
+            
             const tSearch = document.getElementById('tableSearch');
             if(tSearch) tSearch.value = '';
+            
             applyFilters();
         }
 
@@ -524,7 +608,6 @@
             
             let displayData = filteredData;
             
-            // Lógica da Barra de Pesquisa de Participantes
             if (searchTerm) {
                 displayData = displayData.filter(d => 
                     (d.fcp && d.fcp.toLowerCase().includes(searchTerm)) ||
