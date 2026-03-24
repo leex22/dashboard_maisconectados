@@ -9,21 +9,11 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
-    
     <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: { primary: '#005eb8', darkBg: '#0f172a', darkCard: '#1e293b' }
-                }
-            }
-        }
+        tailwind.config = { darkMode: 'class', theme: { extend: { colors: { primary: '#005eb8', darkBg: '#0f172a', darkCard: '#1e293b' } } } }
     </script>
-
     <style>
         body { font-family: 'Inter', sans-serif; transition: background-color 0.3s, color 0.3s; }
         .label-filter { font-size: 0.75rem; font-weight: 700; color: #64748b; text-transform: uppercase; margin-bottom: 4px; display: block; }
@@ -47,7 +37,6 @@
     </div>
 
     <div id="appContainer" class="hidden">
-        
         <header class="max-w-7xl mx-auto mb-6 flex flex-col md:flex-row justify-between items-center gap-4">
             <div>
                 <h1 class="text-2xl font-bold text-primary dark:text-blue-400">📊 Dashboard Mais Conectados</h1>
@@ -55,12 +44,8 @@
                 <p id="lastUpdateInfo" class="text-xs text-slate-400 dark:text-slate-500 mt-1">Carregando dados...</p>
             </div>
             <div class="flex items-center gap-3 flex-wrap justify-end">
-                <button onclick="exportExcel()" class="bg-green-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-green-700 transition flex items-center gap-1.5 shadow-sm">
-                    📥 Excel
-                </button>
-                <button onclick="exportPDF()" class="bg-red-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-red-700 transition flex items-center gap-1.5 shadow-sm">
-                    📊 PDF
-                </button>
+                <button onclick="exportExcel()" class="bg-green-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-green-700 transition flex items-center gap-1.5 shadow-sm">📥 Excel</button>
+                <button onclick="exportPDF()" class="bg-red-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-red-700 transition flex items-center gap-1.5 shadow-sm">📊 PDF</button>
                 <button onclick="toggleTheme()" class="bg-slate-200 dark:bg-slate-700 p-2.5 rounded-lg text-lg hover:bg-slate-300 dark:hover:bg-slate-600 transition">🌓</button>
             </div>
         </header>
@@ -72,16 +57,14 @@
                     <div class="flex items-center gap-1.5 group relative cursor-pointer w-fit">
                         <h3 class="text-sm font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">🎯 Taxa de Conclusão</h3>
                         <span class="text-slate-400 text-sm">ⓘ</span>
-                        <div class="absolute bottom-full left-0 mb-2 hidden group-hover:block w-72 p-2.5 bg-slate-800 text-white text-[11px] leading-tight font-normal normal-case tracking-normal rounded shadow-xl z-50">
-                            A porcentagem de alunos que se inscrevem e realmente chegam até o fim. Mede a eficiência do treinamento.
-                        </div>
+                        <div class="absolute bottom-full left-0 mb-2 hidden group-hover:block w-72 p-2.5 bg-slate-800 text-white text-[11px] leading-tight font-normal normal-case tracking-normal rounded shadow-xl z-50">A porcentagem de alunos que se inscrevem e realmente chegam até o fim. Mede a eficiência do treinamento.</div>
                     </div>
                     <div class="flex flex-col items-end">
                         <span id="conversionRateText" class="text-2xl font-bold text-green-600 leading-none">0%</span>
                     </div>
                 </div>
                 <div class="w-full bg-slate-200 rounded-full h-5 dark:bg-slate-700 overflow-hidden shadow-inner mt-3">
-                    <div id="conversionProgressBar" class="bg-green-500 h-5 rounded-full transition-all duration-1000 ease-out flex items-center justify-end pr-2 text-[10px] text-white font-bold whitespace-nowrap" style="width: 0%"></div>
+                    <div id="conversionProgressBar" class="bg-green-500 h-5 rounded-full transition-all duration-1000 ease-out flex items-center justify-end pr-2 text-[10px] text-white font-bold whitespace-nowrap overflow-hidden" style="width: 0%"></div>
                 </div>
             </div>
 
@@ -92,34 +75,245 @@
                         <button onclick="resetFilters()" class="text-xs bg-red-100 text-red-600 px-3 py-1.5 rounded font-bold uppercase hover:bg-red-200 transition">Limpar Filtros</button>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        
-                        <div class="dropdown-wrapper relative">
-                            <label class="label-filter">Método de Treinamento</label>
-                            <button type="button" onclick="toggleDrop('drop-Method', event)" class="w-full border border-slate-300 dark:border-slate-600 rounded-md p-2 text-left text-sm flex justify-between items-center bg-transparent dark:text-white focus:outline-none">
-                                <span id="label-Method" class="truncate">Todos selecionados</span>
-                                <span class="text-[10px] ml-2">▼</span>
-                            </button>
-                            <div id="drop-Method" class="dropdown-menu hidden absolute z-50 w-full mt-1 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-md shadow-xl flex flex-col max-h-64">
-                                <div class="p-2 border-b dark:border-slate-700 sticky top-0 bg-white dark:bg-slate-800 rounded-t-md">
-                                    <div class="relative"><span class="absolute left-2.5 top-1.5 text-xs">🔍</span><input type="text" class="w-full pl-7 pr-2 py-1.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded text-xs dark:text-white focus:outline-none" placeholder="Pesquisar..." onkeyup="filterDropList('drop-Method', this.value)"></div>
-                                </div>
-                                <div class="p-1 overflow-y-auto flex flex-col custom-scrollbar" id="list-Method"></div>
-                            </div>
-                        </div>
+                        <div class="dropdown-wrapper relative"><label class="label-filter">Método de Treinamento</label><button type="button" onclick="toggleDrop('drop-Method', event)" class="w-full border border-slate-300 dark:border-slate-600 rounded-md p-2 text-left text-sm flex justify-between items-center bg-transparent dark:text-white focus:outline-none"><span id="label-Method" class="truncate">Todos selecionados</span><span class="text-[10px] ml-2">▼</span></button><div id="drop-Method" class="dropdown-menu hidden absolute z-50 w-full mt-1 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-md shadow-xl flex flex-col max-h-64"><div class="p-2 border-b dark:border-slate-700 sticky top-0 bg-white dark:bg-slate-800 rounded-t-md"><div class="relative"><span class="absolute left-2.5 top-1.5 text-xs">🔍</span><input type="text" class="w-full pl-7 pr-2 py-1.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded text-xs dark:text-white focus:outline-none" placeholder="Pesquisar..." onkeyup="filterDropList('drop-Method', this.value)"></div></div><div class="p-1 overflow-y-auto flex flex-col custom-scrollbar" id="list-Method"></div></div></div>
+                        <div class="dropdown-wrapper relative"><label class="label-filter">Curso</label><button type="button" onclick="toggleDrop('drop-Course', event)" class="w-full border border-slate-300 dark:border-slate-600 rounded-md p-2 text-left text-sm flex justify-between items-center bg-transparent dark:text-white focus:outline-none"><span id="label-Course" class="truncate">Todos selecionados</span><span class="text-[10px] ml-2">▼</span></button><div id="drop-Course" class="dropdown-menu hidden absolute z-50 w-full mt-1 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-md shadow-xl flex flex-col max-h-64"><div class="p-2 border-b dark:border-slate-700 sticky top-0 bg-white dark:bg-slate-800 rounded-t-md"><div class="relative"><span class="absolute left-2.5 top-1.5 text-xs">🔍</span><input type="text" class="w-full pl-7 pr-2 py-1.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded text-xs dark:text-white focus:outline-none" placeholder="Pesquisar..." onkeyup="filterDropList('drop-Course', this.value)"></div></div><div class="p-1 overflow-y-auto flex flex-col custom-scrollbar" id="list-Course"></div></div></div>
+                        <div class="dropdown-wrapper relative"><label class="label-filter">Público-Alvo</label><button type="button" onclick="toggleDrop('drop-Domain', event)" class="w-full border border-slate-300 dark:border-slate-600 rounded-md p-2 text-left text-sm flex justify-between items-center bg-transparent dark:text-white focus:outline-none"><span id="label-Domain" class="truncate">Todos selecionados</span><span class="text-[10px] ml-2">▼</span></button><div id="drop-Domain" class="dropdown-menu hidden absolute z-50 w-full mt-1 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-md shadow-xl flex flex-col max-h-64"><div class="p-2 border-b dark:border-slate-700 sticky top-0 bg-white dark:bg-slate-800 rounded-t-md"><div class="relative"><span class="absolute left-2.5 top-1.5 text-xs">🔍</span><input type="text" class="w-full pl-7 pr-2 py-1.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded text-xs dark:text-white focus:outline-none" placeholder="Pesquisar..." onkeyup="filterDropList('drop-Domain', this.value)"></div></div><div class="p-1 overflow-y-auto flex flex-col custom-scrollbar" id="list-Domain"></div></div></div>
+                        <div class="dropdown-wrapper relative"><label class="label-filter">Status</label><button type="button" onclick="toggleDrop('drop-Status', event)" class="w-full border border-slate-300 dark:border-slate-600 rounded-md p-2 text-left text-sm flex justify-between items-center bg-transparent dark:text-white focus:outline-none"><span id="label-Status" class="truncate">Todos selecionados</span><span class="text-[10px] ml-2">▼</span></button><div id="drop-Status" class="dropdown-menu hidden absolute z-50 w-full mt-1 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-md shadow-xl flex flex-col max-h-64"><div class="p-2 border-b dark:border-slate-700 sticky top-0 bg-white dark:bg-slate-800 rounded-t-md"><div class="relative"><span class="absolute left-2.5 top-1.5 text-xs">🔍</span><input type="text" class="w-full pl-7 pr-2 py-1.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded text-xs dark:text-white focus:outline-none" placeholder="Pesquisar..." onkeyup="filterDropList('drop-Status', this.value)"></div></div><div class="p-1 overflow-y-auto flex flex-col custom-scrollbar" id="list-Status"></div></div></div>
+                        <div class="dropdown-wrapper relative"><label class="label-filter">Facilitador</label><button type="button" onclick="toggleDrop('drop-Facilitator', event)" class="w-full border border-slate-300 dark:border-slate-600 rounded-md p-2 text-left text-sm flex justify-between items-center bg-transparent dark:text-white focus:outline-none"><span id="label-Facilitator" class="truncate">Todos selecionados</span><span class="text-[10px] ml-2">▼</span></button><div id="drop-Facilitator" class="dropdown-menu hidden absolute z-50 w-full mt-1 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-md shadow-xl flex flex-col max-h-64"><div class="p-2 border-b dark:border-slate-700 sticky top-0 bg-white dark:bg-slate-800 rounded-t-md"><div class="relative"><span class="absolute left-2.5 top-1.5 text-xs">🔍</span><input type="text" class="w-full pl-7 pr-2 py-1.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded text-xs dark:text-white focus:outline-none" placeholder="Pesquisar..." onkeyup="filterDropList('drop-Facilitator', this.value)"></div></div><div class="p-1 overflow-y-auto flex flex-col custom-scrollbar" id="list-Facilitator"></div></div></div>
+                        <div class="dropdown-wrapper relative"><label class="label-filter">Cluster</label><button type="button" onclick="toggleDrop('drop-Cluster', event)" class="w-full border border-slate-300 dark:border-slate-600 rounded-md p-2 text-left text-sm flex justify-between items-center bg-transparent dark:text-white focus:outline-none"><span id="label-Cluster" class="truncate">Todos selecionados</span><span class="text-[10px] ml-2">▼</span></button><div id="drop-Cluster" class="dropdown-menu hidden absolute z-50 w-full mt-1 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-md shadow-xl flex flex-col max-h-64"><div class="p-2 border-b dark:border-slate-700 sticky top-0 bg-white dark:bg-slate-800 rounded-t-md"><div class="relative"><span class="absolute left-2.5 top-1.5 text-xs">🔍</span><input type="text" class="w-full pl-7 pr-2 py-1.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded text-xs dark:text-white focus:outline-none" placeholder="Pesquisar..." onkeyup="filterDropList('drop-Cluster', this.value)"></div></div><div class="p-1 overflow-y-auto flex flex-col custom-scrollbar" id="list-Cluster"></div></div></div>
+                    </div>
+                </div>
+                <div class="bg-white dark:bg-darkCard p-5 rounded-xl shadow-sm border-t-4 border-indigo-500 flex flex-col h-full"><h3 class="text-sm font-bold uppercase tracking-wider mb-4">📅 Filtro de Data</h3><div class="flex flex-col gap-4 flex-grow"><div><label class="label-filter">Data Inicial</label><input type="date" id="filterDateStart" onchange="applyFilters()" class="w-full border border-slate-300 dark:border-slate-600 rounded-md p-2 text-sm bg-transparent dark:text-white focus:outline-none"></div><div><label class="label-filter">Data Final</label><input type="date" id="filterDateEnd" onchange="applyFilters()" class="w-full border border-slate-300 dark:border-slate-600 rounded-md p-2 text-sm bg-transparent dark:text-white focus:outline-none"></div></div></div>
+            </div>
 
-                        <div class="dropdown-wrapper relative">
-                            <label class="label-filter">Curso</label>
-                            <button type="button" onclick="toggleDrop('drop-Course', event)" class="w-full border border-slate-300 dark:border-slate-600 rounded-md p-2 text-left text-sm flex justify-between items-center bg-transparent dark:text-white focus:outline-none">
-                                <span id="label-Course" class="truncate">Todos selecionados</span>
-                                <span class="text-[10px] ml-2">▼</span>
-                            </button>
-                            <div id="drop-Course" class="dropdown-menu hidden absolute z-50 w-full mt-1 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-md shadow-xl flex flex-col max-h-64">
-                                <div class="p-2 border-b dark:border-slate-700 sticky top-0 bg-white dark:bg-slate-800 rounded-t-md">
-                                    <div class="relative"><span class="absolute left-2.5 top-1.5 text-xs">🔍</span><input type="text" class="w-full pl-7 pr-2 py-1.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded text-xs dark:text-white focus:outline-none" placeholder="Pesquisar..." onkeyup="filterDropList('drop-Course', this.value)"></div>
-                                </div>
-                                <div class="p-1 overflow-y-auto flex flex-col custom-scrollbar" id="list-Course"></div>
-                            </div>
-                        </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                <div class="bg-white dark:bg-darkCard p-5 rounded-xl shadow-sm border-l-4 border-purple-500 flex flex-col justify-center"><div class="flex items-center gap-1 group relative cursor-pointer w-fit mb-1"><p class="text-xs text-slate-500 font-bold uppercase">Alunos Únicos</p><span class="text-slate-400 text-xs">ⓘ</span><div class="absolute bottom-full left-0 mb-1 hidden group-hover:block w-56 p-2.5 bg-slate-800 text-white text-[11px] leading-tight font-normal normal-case tracking-normal rounded shadow-xl z-50">Quantidade exata de alunos cadastrados na plataforma, independentemente de em quantos cursos diferentes eles se matricularam.</div></div><h2 id="kpiUnique" class="text-3xl font-bold text-slate-800 dark:text-white">0</h2></div>
+                <div class="bg-white dark:bg-darkCard p-5 rounded-xl shadow-sm border-l-4 border-blue-500 flex flex-col justify-center"><div class="flex items-center gap-1 group relative cursor-pointer w-fit mb-1"><p class="text-xs text-slate-500 font-bold uppercase">Total de inscrições</p><span class="text-slate-400 text-xs">ⓘ</span><div class="absolute bottom-full left-0 mb-1 hidden group-hover:block w-56 p-2.5 bg-slate-800 text-white text-[11px] leading-tight font-normal normal-case tracking-normal rounded shadow-xl z-50">A soma total de todas as matrículas realizadas nos cursos (incluindo alunos em andamento e já concluídos). Representa o volume bruto de matrículas.</div></div><h2 id="kpiTotal" class="text-3xl font-bold text-slate-800 dark:text-white">0</h2></div>
+                <div class="bg-white dark:bg-darkCard p-5 rounded-xl shadow-sm border-l-4 border-amber-500 flex flex-col justify-center"><div class="flex items-center gap-1 group relative cursor-pointer w-fit mb-1"><p class="text-xs text-slate-500 font-bold uppercase">Em andamento</p><span class="text-slate-400 text-xs">ⓘ</span><div class="absolute bottom-full left-0 mb-1 hidden group-hover:block w-56 p-2.5 bg-slate-800 text-white text-[11px] leading-tight font-normal normal-case tracking-normal rounded shadow-xl z-50">Porcentagem de alunos que iniciaram, mas ainda não concluíram.</div></div><h2 id="kpiEnrolledPct" class="text-3xl font-bold text-slate-800 dark:text-white">0%</h2><p id="kpiEnrolledAbs" class="text-xs text-slate-400 mt-1 font-medium">0 participantes</p></div>
+                <div class="bg-white dark:bg-darkCard p-5 rounded-xl shadow-sm border-l-4 border-emerald-500 flex flex-col justify-center"><div class="flex items-center gap-1 group relative cursor-pointer w-fit mb-1"><p class="text-xs text-slate-500 font-bold uppercase">Engajamento</p><span class="text-slate-400 text-xs">ⓘ</span><div class="absolute bottom-full left-0 mb-1 hidden group-hover:block w-56 p-2.5 bg-slate-800 text-white text-[11px] leading-tight font-normal normal-case tracking-normal rounded shadow-xl z-50">Média de cursos realizados (inscrições e conclusões) por cada aluno único.</div></div><h2 id="kpiEngagement" class="text-3xl font-bold text-slate-800 dark:text-white">0</h2><p class="text-xs text-slate-400 mt-1 font-medium">cursos por aluno</p></div>
+            </div>
 
-                        <div class="dropdown-wrapper relative">
-                            <label class="label-filter">Público-Alvo</label>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                <div class="bg-white dark:bg-darkCard p-5 rounded-xl shadow-sm"><h3 class="text-sm font-bold uppercase text-slate-700 dark:text-slate-300 mb-1">📚 Volume por Curso</h3><p class="text-[10px] text-slate-500 mb-4">Mostra quais treinamentos têm mais alunos.</p><canvas id="chartCourse"></canvas></div>
+                <div class="bg-white dark:bg-darkCard p-5 rounded-xl shadow-sm"><h3 class="text-sm font-bold uppercase text-slate-700 dark:text-slate-300 mb-1">👥 Público-Alvo</h3><p class="text-[10px] text-slate-500 mb-4">Divide os alunos pelo seu perfil.</p><div class="flex justify-center" style="height: 300px;"><canvas id="chartDomain"></canvas></div></div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                <div class="bg-white dark:bg-darkCard p-5 rounded-xl shadow-sm"><h3 class="text-sm font-bold uppercase text-slate-700 dark:text-slate-300 mb-1">⏳ Lead Time de Aprendizagem</h3><p class="text-[10px] text-slate-500 mb-4">Média em dias entre a inscrição e a conclusão.</p><canvas id="chartLeadTime"></canvas></div>
+                <div class="bg-white dark:bg-darkCard p-5 rounded-xl shadow-sm overflow-x-auto"><h3 class="text-sm font-bold uppercase text-slate-700 dark:text-slate-300 mb-1">🔥 Mapa de Calor Sazonal</h3><p class="text-[10px] text-slate-500 mb-4">Volume de Conclusões mensais por Público-Alvo.</p><div id="heatmapContainer" class="min-w-[500px]"></div></div>
+            </div>
+
+            <div id="tableSection" class="bg-white dark:bg-darkCard p-5 rounded-xl shadow-sm mb-8 overflow-hidden">
+                <div class="flex flex-col md:flex-row items-center gap-4 mb-5">
+                    <h3 class="text-sm font-bold uppercase text-slate-700 dark:text-slate-300 whitespace-nowrap">📋 Lista de Participantes</h3>
+                    <div class="relative w-full"><span class="absolute left-3 top-2.5 text-sm">🔍</span><input type="text" id="tableSearch" placeholder="Pesquisar..." class="w-full pl-9 pr-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg text-sm bg-slate-50 dark:bg-slate-700 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-primary" onkeyup="updateTable()"></div>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-xs uppercase tracking-wider">
+                                <th class="p-3 font-semibold rounded-tl">FCP</th>
+                                <th class="p-3 font-semibold">Participante (Nome/E-mail)</th>
+                                <th class="p-3 font-semibold">Público-Alvo</th>
+                                <th class="p-3 font-semibold">Curso</th>
+                                <th class="p-3 font-semibold text-center">Status</th>
+                                <th class="p-3 font-semibold rounded-tr text-right">Data de Conclusão</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const SENHA_MESTRA = "1234";
+
+        function checkAuth() {
+            if (sessionStorage.getItem("dashboard_auth") === "true") {
+                document.getElementById('loginOverlay').style.display = 'none';
+                document.getElementById('appContainer').classList.remove('hidden');
+                carregarBaseAutomatica();
+            }
+        }
+
+        function checkPassword() {
+            const p = document.getElementById('passwordInput').value;
+            if (p === SENHA_MESTRA) {
+                sessionStorage.setItem("dashboard_auth", "true");
+                document.getElementById('loginOverlay').style.display = 'none';
+                document.getElementById('appContainer').classList.remove('hidden');
+                carregarBaseAutomatica();
+            } else {
+                document.getElementById('loginError').classList.remove('hidden');
+            }
+        }
+
+        document.getElementById('passwordInput').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') checkPassword();
+        });
+
+        window.onload = checkAuth;
+        Chart.register(ChartDataLabels);
+
+        let rawData = [];
+        let filteredData = [];
+        let charts = {};
+
+        function exportExcel() {
+            if (filteredData.length === 0) return alert("Nenhum dado.");
+            const exportData = filteredData.map(d => ({ "FCP": d.fcp, "Nome": d.name, "Email": d.email, "Curso": d.course, "Público-Alvo": d.domain, "Status": d.status === 'Completed' ? 'Concluído' : 'Inscrito', "Data Conclusão": (d.status === 'Completed' && d.date) ? d.date.toLocaleDateString('pt-BR') : '' }));
+            const ws = XLSX.utils.json_to_sheet(exportData); 
+            const wb = XLSX.utils.book_new(); 
+            XLSX.utils.book_append_sheet(wb, ws, "Dados"); 
+            XLSX.writeFile(wb, "MaisConectados.xlsx");
+        }
+
+        async function exportPDF() {
+            const dashboard = document.getElementById('dashboardContent'); 
+            const tableSection = document.getElementById('tableSection');
+            tableSection.style.display = 'none';
+            try { 
+                const { jsPDF } = window.jspdf; 
+                const canvas = await html2canvas(dashboard, { scale: 2, backgroundColor: document.documentElement.classList.contains('dark') ? '#0f172a' : '#f1f5f9' }); 
+                const imgData = canvas.toDataURL('image/png'); 
+                const doc = new jsPDF('p', 'mm', 'a4'); 
+                const pdfWidth = doc.internal.pageSize.getWidth(); 
+                const pdfHeight = (canvas.height * pdfWidth) / canvas.width; 
+                doc.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight); 
+                doc.save('Dashboard.pdf'); 
+            } finally { 
+                tableSection.style.display = 'block'; 
+            }
+        }
+
+        document.addEventListener('click', (e) => { if (!e.target.closest('.dropdown-wrapper')) document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.add('hidden')); });
+        function toggleDrop(id, event) { event.stopPropagation(); const menu = document.getElementById(id); const isHidden = menu.classList.contains('hidden'); document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.add('hidden')); if (isHidden) menu.classList.remove('hidden'); }
+        function filterDropList(dropId, term) { term = term.toLowerCase(); document.querySelectorAll(`#${dropId} .drop-item`).forEach(item => { item.style.display = (item.querySelector('.item-text').innerText.toLowerCase().includes(term) || item.querySelector('input').value === 'all') ? 'flex' : 'none'; }); }
+        function toggleAllDrop(type, isChecked) { document.querySelectorAll(`.cb-${type}:not([value="all"])`).forEach(cb => cb.checked = isChecked); updateDropSelection(type); }
+        function updateDropSelection(type) { const allCb = document.querySelector(`#list-${type} input[value="all"]`); const cbs = document.querySelectorAll(`.cb-${type}:not([value="all"])`); const checkedCount = Array.from(cbs).filter(cb => cb.checked).length; if(allCb) allCb.checked = (checkedCount === cbs.length); const label = document.getElementById(`label-${type}`); if (checkedCount === cbs.length || checkedCount === 0) label.innerText = "Todos selecionados"; else if (checkedCount === 1) label.innerText = Array.from(cbs).find(cb => cb.checked).nextElementSibling.innerText.substring(0, 20) + '...'; else label.innerText = `${checkedCount} itens selecionados`; applyFilters(); }
+        function getSelectedValues(type) { const allCb = document.querySelector(`#list-${type} input[value="all"]`); if (allCb && allCb.checked) return 'all'; const selected = Array.from(document.querySelectorAll(`.cb-${type}:not([value="all"])`)).filter(cb => cb.checked).map(cb => cb.value); return selected.length > 0 ? selected : ['__none__']; }
+
+        async function carregarBaseAutomatica() {
+            try {
+                let response = await fetch('dados.xlsx'); if (!response.ok) response = await fetch('dados.csv'); if (!response.ok) throw new Error("Erro");
+                const lastMod = response.headers.get('Last-Modified'); document.getElementById('lastUpdateInfo').textContent = lastMod ? `Atualizado: ${new Date(lastMod).toLocaleString('pt-BR')}` : `Base Carregada`;
+                const arrayBuffer = await response.arrayBuffer(); const workbook = XLSX.read(new Uint8Array(arrayBuffer), { type: 'array', cellDates: true });
+                const json = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { defval: "" });
+                rawData = json.map(row => ({ fcp: (row['FCP'] || '').trim(), participantId: (row['PARTICIPANT_ID'] || '').trim(), name: (row['Name'] || '').trim(), email: (row['Email'] || '').trim(), course: (row['Course Name'] || 'Sem Nome').trim(), method: (row['Training Method'] || 'N/A').trim(), domain: (row['PERMISSIONS'] || 'N/A').trim(), status: (row['ACTIVITY_CODE'] || '').trim(), facilitator: (row['Partnership Facilitator'] || 'N/A').trim(), cluster: (row['FCP_CLUSTER'] || 'N/A').trim(), date: isNaN(new Date(row['ACTIVITY_DATE_TIME']).getTime()) ? null : new Date(row['ACTIVITY_DATE_TIME']) })).filter(row => row.status !== '');
+                document.getElementById('dashboardContent').classList.remove('hidden'); populateDropdowns(); applyFilters();
+            } catch (e) { alert("Erro ao ler base."); }
+        }
+
+        function createCustomOptions(arr, type) { const list = document.getElementById(`list-${type}`); let html = `<label class="flex items-center p-2 text-sm dark:text-slate-200 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 drop-item border-b dark:border-slate-700"><input type="checkbox" class="mr-3 cb-${type}" value="all" onchange="toggleAllDrop('${type}', this.checked)" checked> <span class="item-text font-bold">Selecionar Tudo</span></label>`; arr.forEach(item => { html += `<label class="flex items-center p-2 text-sm dark:text-slate-200 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 drop-item"><input type="checkbox" class="mr-3 cb-${type}" value="${item}" onchange="updateDropSelection('${type}')" checked><span class="item-text truncate" title="${item}">${item}</span></label>`; }); list.innerHTML = html; }
+        
+        function populateDropdowns() { 
+            createCustomOptions([...new Set(rawData.map(d => d.course))].sort(), 'Course'); 
+            createCustomOptions([...new Set(rawData.map(d => d.method))].sort(), 'Method'); 
+            createCustomOptions([...new Set(rawData.map(d => d.domain))].sort(), 'Domain'); 
+            createCustomOptions([...new Set(rawData.map(d => d.facilitator))].sort(), 'Facilitator'); 
+            createCustomOptions([...new Set(rawData.map(d => d.cluster))].sort(), 'Cluster'); 
+            document.getElementById('list-Status').innerHTML = `<label class="flex items-center p-2 text-sm dark:text-slate-200 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 drop-item border-b dark:border-slate-700"><input type="checkbox" class="mr-3 cb-Status" value="all" onchange="toggleAllDrop('Status', this.checked)" checked> <span class="item-text font-bold">Selecionar Tudo</span></label><label class="flex items-center p-2 text-sm dark:text-slate-200 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 drop-item"><input type="checkbox" class="mr-3 cb-Status" value="Completed" onchange="updateDropSelection('Status')" checked> <span class="item-text">Concluído ✅</span></label><label class="flex items-center p-2 text-sm dark:text-slate-200 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 drop-item"><input type="checkbox" class="mr-3 cb-Status" value="Enrolled" onchange="updateDropSelection('Status')" checked> <span class="item-text">Inscrito 📝</span></label>`; 
+        }
+
+        function applyFilters() {
+            const courseF = getSelectedValues('Course'); const methodF = getSelectedValues('Method'); const domainF = getSelectedValues('Domain'); const statusF = getSelectedValues('Status'); const facilitatorF = getSelectedValues('Facilitator'); const clusterF = getSelectedValues('Cluster');
+            const dS = document.getElementById('filterDateStart').value ? new Date(document.getElementById('filterDateStart').value) : null;
+            const dE = document.getElementById('filterDateEnd').value ? new Date(document.getElementById('filterDateEnd').value) : null; if(dE) dE.setHours(23,59,59);
+            filteredData = rawData.filter(d => (courseF === 'all' || courseF.includes(d.course)) && (methodF === 'all' || methodF.includes(d.method)) && (domainF === 'all' || domainF.includes(d.domain)) && (statusF === 'all' || statusF.includes(d.status)) && (facilitatorF === 'all' || facilitatorF.includes(d.facilitator)) && (clusterF === 'all' || clusterF.includes(d.cluster)) && (!dS || (d.date && d.date >= dS)) && (!dE || (d.date && d.date <= dE)));
+            updateKPIs(); updateCharts(); updateTable();
+        }
+
+        function resetFilters() { 
+            ['Method', 'Course', 'Domain', 'Status', 'Facilitator', 'Cluster'].forEach(t => { document.querySelectorAll(`.cb-${t}`).forEach(c => c.checked = true); document.getElementById(`label-${t}`).innerText = "Todos selecionados"; }); 
+            document.getElementById('filterDateStart').value = ''; 
+            document.getElementById('filterDateEnd').value = ''; 
+            document.getElementById('tableSearch').value = ''; 
+            applyFilters(); 
+        }
+
+        function updateKPIs() {
+            const total = filteredData.length; const enrolled = filteredData.filter(d => d.status === 'Enrolled').length; const completed = filteredData.filter(d => d.status === 'Completed').length;
+            const uniqueSet = new Set(); filteredData.forEach(d => { const id = d.email || d.participantId || d.name; if(id) uniqueSet.add(id); }); const uniqueS = uniqueSet.size;
+            
+            document.getElementById('kpiTotal').innerText = total.toLocaleString('pt-BR'); 
+            document.getElementById('kpiUnique').innerText = uniqueS.toLocaleString('pt-BR'); 
+            document.getElementById('kpiEngagement').innerText = uniqueS > 0 ? (total / uniqueS).toFixed(1) : '0';
+            document.getElementById('kpiEnrolledPct').innerText = total > 0 ? ((enrolled / total) * 100).toFixed(1) + '%' : '0%'; 
+            document.getElementById('kpiEnrolledAbs').innerText = `${enrolled.toLocaleString('pt-BR')} participantes`;
+            
+            let convRate = (total > 0) ? (completed / total) * 100 : 0; 
+            document.getElementById('conversionRateText').innerText = convRate.toFixed(1) + '%';
+            
+            const pB = document.getElementById('conversionProgressBar'); 
+            pB.style.width = convRate.toFixed(1) + '%'; 
+            pB.innerText = `${completed.toLocaleString('pt-BR')} concluídos`;
+            
+            if (convRate < 40) pB.className = "h-5 rounded-full transition-all duration-1000 ease-out flex items-center justify-end pr-2 text-[10px] text-white font-bold whitespace-nowrap overflow-hidden bg-red-500";
+            else if (convRate < 70) pB.className = "h-5 rounded-full transition-all duration-1000 ease-out flex items-center justify-end pr-2 text-[10px] text-white font-bold whitespace-nowrap overflow-hidden bg-amber-500";
+            else pB.className = "h-5 rounded-full transition-all duration-1000 ease-out flex items-center justify-end pr-2 text-[10px] text-white font-bold whitespace-nowrap overflow-hidden bg-green-500";
+        }
+
+        const dlCfg = { color: '#000', font: { weight: 'bold', size: 10 }, formatter: (v, ctx) => { let sum = ctx.chart.data.datasets[0].data.reduce((a, b) => a + b, 0); return sum > 0 ? (v * 100 / sum).toFixed(1) + "%" : "0%"; } };
+        const ttCfg = { callbacks: { label: (c) => { let sum = c.chart.data.datasets[0].data.reduce((a, b) => a + b, 0); return ` ${c.raw} participantes (${(c.raw*100/sum).toFixed(1)}%)`; } } };
+
+        function updateCharts() {
+            const isD = document.documentElement.classList.contains('dark'); const tC = isD ? '#cbd5e1' : '#475569';
+            const cC = {}; filteredData.forEach(d => cC[d.course] = (cC[d.course] || 0) + 1); const sC = Object.entries(cC).sort((a,b)=>b[1]-a[1]).slice(0, 7);
+            
+            if(charts.chartCourse) charts.chartCourse.destroy(); 
+            charts.chartCourse = new Chart(document.getElementById('chartCourse'), { 
+                type: 'bar', 
+                data: { labels: sC.map(i => i[0].substring(0,25)), datasets: [{ label: 'Participantes', data: sC.map(i => i[1]), backgroundColor: '#005eb8', borderRadius: 4 }] }, 
+                options: { 
+                    indexAxis: 'y', 
+                    plugins: { legend: { display: false }, datalabels: dlCfg, tooltip: ttCfg }, 
+                    scales: { 
+                        x: { grid: { display: false }, ticks: { color: tC } }, 
+                        y: { grid: { display: false }, ticks: { color: tC, font: { size: 10 } } } 
+                    } 
+                } 
+            });
+            
+            const dC = {}; filteredData.forEach(d => dC[d.domain] = (dC[d.domain] || 0) + 1);
+            if(charts.chartDomain) charts.chartDomain.destroy(); 
+            charts.chartDomain = new Chart(document.getElementById('chartDomain'), { type: 'doughnut', data: { labels: Object.keys(dC), datasets: [{ data: Object.values(dC), backgroundColor: ['#005eb8', '#f59e0b', '#10b981', '#6366f1'], borderWidth: 0 }] }, options: { maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: tC } }, datalabels: dlCfg, tooltip: ttCfg } } });
+            
+            const uC = {}; rawData.forEach(d => { if(!d.date || !d.participantId) return; const k = d.participantId + '|' + d.course; if(!uC[k]) uC[k] = {}; if(d.status === 'Enrolled') uC[k].e = d.date; if(d.status === 'Completed') uC[k].c = d.date; });
+            const lT = {}; Object.values(uC).forEach(p => { if(p.e && p.c && p.c >= p.e) { const diff = Math.ceil(Math.abs(p.c - p.e) / (1000*60*60*24)); lT[p.course] = lT[p.course] || { s:0, n:0 }; lT[p.course].s += diff; lT[p.course].n++; } });
+            const sL = Object.entries(lT).map(([c, o]) => [c, (o.s/o.n).toFixed(1)]).sort((a,b)=>b[1]-a[1]).slice(0, 7);
+            
+            if(charts.chartLeadTime) charts.chartLeadTime.destroy(); 
+            charts.chartLeadTime = new Chart(document.getElementById('chartLeadTime'), { type: 'bar', data: { labels: sL.map(i => i[0].substring(0,25)), datasets: [{ label: 'Média', data: sL.map(i => i[1]), backgroundColor: '#f59e0b', borderRadius: 4 }] }, options: { indexAxis: 'y', plugins: { legend: { display: false }, datalabels: { color:'#000', font:{weight:'bold'}, formatter:(v)=>v+' d' } }, scales: { x: { grid: { display: false }, ticks: { color: tC } }, y: { grid: { display: false }, ticks: { color: tC } } } } });
+            
+            const domainsF = [...new Set(filteredData.map(d => d.domain))].sort(); const matrix = {}; domainsF.forEach(d => matrix[d] = new Array(12).fill(0)); let maxH = 0; filteredData.filter(d => d.status === 'Completed' && d.date).forEach(d => { const m = d.date.getMonth(); matrix[d.domain][m]++; if(matrix[d.domain][m] > maxH) maxH = matrix[d.domain][m]; });
+            let hH = '<table class="w-full text-xs text-center border-separate" style="border-spacing: 2px;"><thead><tr><th></th>' + ["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"].map(m => `<th class="text-slate-500">${m}</th>`).join('') + '</tr></thead><tbody>';
+            domainsF.forEach(d => { hH += `<tr><td class="text-left font-semibold text-slate-600 dark:text-slate-300">${d}</td>` + matrix[d].map(v => { const a = maxH > 0 ? 0.15 + (v/maxH)*0.85 : 0.05; return `<td class="p-2 transition rounded-md" style="background-color: rgba(0,94,184,${v>0?a:0.05}); color: ${v>0?(v/maxH>0.4?'white':'black'):'transparent'};">${v>0?v:''}</td>`; }).join('') + '</tr>'; });
+            document.getElementById('heatmapContainer').innerHTML = hH + '</tbody></table>';
+        }
+
+        function updateTable() {
+            const tbody = document.getElementById('tableBody'); tbody.innerHTML = '';
+            const sT = document.getElementById('tableSearch').value.toLowerCase();
+            let dD = filteredData.filter(d => !sT || (d.name && d.name.toLowerCase().includes(sT)) || (d.email && d.email.toLowerCase().includes(sT)) || (d.participantId && d.participantId.toLowerCase().includes(sT)) || (d.fcp && d.fcp.toLowerCase().includes(sT))).slice(0, 100);
+            if(dD.length === 0) return tbody.innerHTML = '<tr><td colspan="7" class="p-4 text-center">Nenhum registro encontrado.</td></tr>';
+            dD.forEach(d => {
+                const dateS = (d.status === 'Completed' && d.date) ? d.date.toLocaleDateString('pt-BR') : '-';
+                tbody.innerHTML += `<tr class="border-b border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition">
+                    <td class="p-3 text-sm">${d.fcp || '-'}</td>
+                    <td class="p-3">
+                        <div class="text-sm font-semibold">${d.name || '-'}</div>
+                        <div class="text-[11px] text-slate-500 dark:text-slate-400 font-medium mt-0.5">${d.email || '-'}</div>
+                    </td>
+                    <td class="p-3 text-sm">${d.domain || '-'}</td>
+                    <td class="p-3 text-sm truncate max-w-[200px]" title="${d.course}">${d.course}</td>
+                    <td class="p-3 text-center"><span class="text-[9px] px-1.5 py-0.5 ${d.status === 'Completed' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'} rounded border font-bold uppercase">${d.status === 'Completed' ? 'Concluído' : 'Inscrito'}</span></td>
+                    <td class="p-3 text-sm text-right">${dateS}</td>
+                </tr>`;
+            });
+        }
+        function toggleTheme() { document.documentElement.classList.toggle('dark'); if (filteredData.length > 0) updateCharts(); }
+    </script>
+</body>
+</html>
