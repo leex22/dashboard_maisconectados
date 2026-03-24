@@ -287,10 +287,10 @@
                                 <th class="p-3 font-semibold rounded-tl">FCP</th>
                                 <th class="p-3 font-semibold">Participant ID</th>
                                 <th class="p-3 font-semibold">Nome</th>
-                                <th class="p-3 font-semibold">Email</th>
+                                <th class="p-3 font-semibold">Público-Alvo</th>
                                 <th class="p-3 font-semibold">Curso</th>
                                 <th class="p-3 font-semibold text-center">Status</th>
-                                <th class="p-3 font-semibold rounded-tr text-right">Data</th>
+                                <th class="p-3 font-semibold rounded-tr text-right">Data de Conclusão</th>
                             </tr>
                         </thead>
                         <tbody id="tableBody">
@@ -808,7 +808,7 @@
             }
 
             displayData.forEach(d => {
-                const dateStr = d.date ? d.date.toLocaleDateString('pt-BR') : '-';
+                const dateStr = (d.status === 'Completed' && d.date) ? d.date.toLocaleDateString('pt-BR') : '-';
                 const statusBadge = d.status === 'Completed' 
                     ? `<span class="text-[9px] px-1.5 py-0.5 bg-green-100 text-green-700 rounded border border-green-200 uppercase font-bold">Concluído</span>`
                     : `<span class="text-[9px] px-1.5 py-0.5 bg-amber-100 text-amber-700 rounded border border-amber-200 uppercase font-bold">Inscrito</span>`;
@@ -817,8 +817,11 @@
                     <tr class="border-b border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition">
                         <td class="p-3 text-sm text-slate-700 dark:text-slate-300">${d.fcp || '-'}</td>
                         <td class="p-3 text-sm text-slate-700 dark:text-slate-300">${d.participantId || '-'}</td>
-                        <td class="p-3 text-sm text-slate-700 dark:text-slate-300">${d.name || '-'}</td>
-                        <td class="p-3 text-sm text-slate-700 dark:text-slate-300">${d.email || '-'}</td>
+                        <td class="p-3">
+                            <div class="text-sm font-semibold text-slate-700 dark:text-slate-300">${d.name || '-'}</div>
+                            <div class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">${d.email || '-'}</div>
+                        </td>
+                        <td class="p-3 text-sm text-slate-700 dark:text-slate-300">${d.domain || '-'}</td>
                         <td class="p-3 text-sm text-slate-700 dark:text-slate-300 truncate max-w-[200px]" title="${d.course}">${d.course}</td>
                         <td class="p-3 text-sm text-center">${statusBadge}</td>
                         <td class="p-3 text-sm text-slate-700 dark:text-slate-300 text-right">${dateStr}</td>
