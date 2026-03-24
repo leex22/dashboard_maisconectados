@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard | Mais Conectados</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
@@ -28,281 +29,330 @@
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         .dark .custom-scrollbar::-webkit-scrollbar-thumb { background: #475569; }
-        /* Suporte ao modo escuro nos inputs de data */
         .dark input[type="date"] { color-scheme: dark; }
     </style>
 </head>
 <body class="bg-slate-100 text-slate-900 dark:bg-darkBg dark:text-slate-100 p-4 md:p-8">
 
-    <header class="max-w-7xl mx-auto mb-6 flex flex-col md:flex-row justify-between items-center gap-4">
-        <div>
-            <h1 class="text-2xl font-bold text-primary dark:text-blue-400">📊 Dashboard Mais Conectados</h1>
-            <p class="text-slate-500 dark:text-slate-400 text-sm">Gestão Estratégica de Treinamentos</p>
+    <div id="loginOverlay" class="fixed inset-0 bg-slate-900/90 z-[100] flex flex-col items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white dark:bg-darkCard p-8 rounded-xl shadow-2xl w-full max-w-sm text-center border-t-4 border-primary">
+            <h2 class="text-2xl font-bold text-slate-800 dark:text-white mb-2">🔒 Acesso Restrito</h2>
+            <p class="text-sm text-slate-500 mb-6">Digite a senha para visualizar o dashboard.</p>
+            <input type="password" id="passwordInput" placeholder="Senha de acesso" class="w-full border border-slate-300 dark:border-slate-600 rounded-md p-3 mb-4 bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary text-center tracking-widest">
+            <button onclick="checkPassword()" class="w-full bg-primary text-white font-bold py-3 rounded-md hover:bg-blue-700 transition shadow-md">Entrar</button>
+            <p id="loginError" class="text-red-500 text-xs mt-4 font-bold hidden bg-red-50 dark:bg-red-900/30 p-2 rounded">Senha incorreta. Tente novamente.</p>
         </div>
-        <div class="flex items-center gap-4">
-            <span id="lastUpdateInfo" class="text-xs text-slate-500 dark:text-slate-400 font-medium bg-white dark:bg-slate-800 px-3 py-1.5 rounded shadow-sm border border-slate-200 dark:border-slate-700">Carregando dados...</span>
-            <button onclick="toggleTheme()" class="bg-slate-200 dark:bg-slate-700 p-2.5 rounded-lg text-lg hover:bg-slate-300 dark:hover:bg-slate-600 transition">🌓</button>
-        </div>
-    </header>
+    </div>
 
-    <main id="dashboardContent" class="max-w-7xl mx-auto hidden">
+    <div id="appContainer" class="hidden">
         
-        <div class="col-span-full bg-white dark:bg-darkCard p-6 rounded-xl shadow-sm border-t-4 border-green-500 mb-6">
-            <div class="flex justify-between items-end mb-2">
-                <div class="flex items-center gap-1.5 group relative cursor-pointer w-fit">
-                    <h3 class="text-sm font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">🎯 Taxa de Conversão (Modo Meta)</h3>
-                    <span class="text-slate-400 text-sm">ⓘ</span>
-                    <div class="absolute bottom-full left-0 mb-2 hidden group-hover:block w-72 p-2.5 bg-slate-800 text-white text-[11px] leading-tight font-normal normal-case tracking-normal rounded shadow-xl z-50">
-                        A porcentagem de alunos que se inscrevem e realmente chegam até o fim. Mede a eficiência do treinamento e ajuda a ver se há muita desistência no meio do caminho.
-                    </div>
-                </div>
-                <span id="conversionRateText" class="text-2xl font-bold text-green-600">0%</span>
+        <header class="max-w-7xl mx-auto mb-6 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div>
+                <h1 class="text-2xl font-bold text-primary dark:text-blue-400">📊 Dashboard Mais Conectados</h1>
+                <p class="text-slate-500 dark:text-slate-400 text-sm">Gestão Estratégica de Treinamentos</p>
             </div>
-            <div class="w-full bg-slate-200 rounded-full h-5 dark:bg-slate-700 overflow-hidden shadow-inner mt-3">
-                <div id="conversionProgressBar" class="bg-green-500 h-5 rounded-full transition-all duration-1000 ease-out flex items-center justify-end pr-2 text-[10px] text-white font-bold" style="width: 0%"></div>
+            <div class="flex items-center gap-4">
+                <span id="lastUpdateInfo" class="text-xs text-slate-500 dark:text-slate-400 font-medium bg-white dark:bg-slate-800 px-3 py-1.5 rounded shadow-sm border border-slate-200 dark:border-slate-700">Carregando dados...</span>
+                <button onclick="toggleTheme()" class="bg-slate-200 dark:bg-slate-700 p-2.5 rounded-lg text-lg hover:bg-slate-300 dark:hover:bg-slate-600 transition">🌓</button>
             </div>
-        </div>
+        </header>
 
-        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-6">
+        <main id="dashboardContent" class="max-w-7xl mx-auto hidden">
             
-            <div class="lg:col-span-3 bg-white dark:bg-darkCard p-5 rounded-xl shadow-sm border-t-4 border-primary">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-sm font-bold uppercase tracking-wider">🔍 Filtros Inteligentes</h3>
-                    <button onclick="resetFilters()" class="text-xs bg-red-100 text-red-600 px-3 py-1.5 rounded font-bold uppercase hover:bg-red-200 transition">Limpar Filtros</button>
-                </div>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    
-                    <div class="dropdown-wrapper relative">
-                        <label class="label-filter">Método de Treinamento</label>
-                        <button type="button" onclick="toggleDrop('drop-Method', event)" class="w-full border border-slate-300 dark:border-slate-600 rounded-md p-2 text-left text-sm flex justify-between items-center bg-transparent dark:text-white focus:outline-none">
-                            <span id="label-Method" class="truncate">Todos selecionados</span>
-                            <span class="text-[10px] ml-2">▼</span>
-                        </button>
-                        <div id="drop-Method" class="dropdown-menu hidden absolute z-50 w-full mt-1 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-md shadow-xl flex flex-col max-h-64">
-                            <div class="p-2 border-b dark:border-slate-700 sticky top-0 bg-white dark:bg-slate-800 rounded-t-md">
-                                <div class="relative">
-                                    <span class="absolute left-2.5 top-1.5 text-xs">🔍</span>
-                                    <input type="text" class="w-full pl-7 pr-2 py-1.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded text-xs dark:text-white focus:outline-none" placeholder="Pesquisar..." onkeyup="filterDropList('drop-Method', this.value)">
-                                </div>
-                            </div>
-                            <div class="p-1 overflow-y-auto flex flex-col custom-scrollbar" id="list-Method"></div>
+            <div class="col-span-full bg-white dark:bg-darkCard p-6 rounded-xl shadow-sm border-t-4 border-green-500 mb-6">
+                <div class="flex justify-between items-end mb-2">
+                    <div class="flex items-center gap-1.5 group relative cursor-pointer w-fit">
+                        <h3 class="text-sm font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">🎯 Taxa de Conversão (Modo Meta)</h3>
+                        <span class="text-slate-400 text-sm">ⓘ</span>
+                        <div class="absolute bottom-full left-0 mb-2 hidden group-hover:block w-72 p-2.5 bg-slate-800 text-white text-[11px] leading-tight font-normal normal-case tracking-normal rounded shadow-xl z-50">
+                            A porcentagem de alunos que se inscrevem e realmente chegam até o fim. Mede a eficiência do treinamento.
                         </div>
                     </div>
+                    <span id="conversionRateText" class="text-2xl font-bold text-green-600">0%</span>
+                </div>
+                <div class="w-full bg-slate-200 rounded-full h-5 dark:bg-slate-700 overflow-hidden shadow-inner mt-3">
+                    <div id="conversionProgressBar" class="bg-green-500 h-5 rounded-full transition-all duration-1000 ease-out flex items-center justify-end pr-2 text-[10px] text-white font-bold" style="width: 0%"></div>
+                </div>
+            </div>
 
-                    <div class="dropdown-wrapper relative">
-                        <label class="label-filter">Curso</label>
-                        <button type="button" onclick="toggleDrop('drop-Course', event)" class="w-full border border-slate-300 dark:border-slate-600 rounded-md p-2 text-left text-sm flex justify-between items-center bg-transparent dark:text-white focus:outline-none">
-                            <span id="label-Course" class="truncate">Todos selecionados</span>
-                            <span class="text-[10px] ml-2">▼</span>
-                        </button>
-                        <div id="drop-Course" class="dropdown-menu hidden absolute z-50 w-full mt-1 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-md shadow-xl flex flex-col max-h-64">
-                            <div class="p-2 border-b dark:border-slate-700 sticky top-0 bg-white dark:bg-slate-800 rounded-t-md">
-                                <div class="relative">
-                                    <span class="absolute left-2.5 top-1.5 text-xs">🔍</span>
-                                    <input type="text" class="w-full pl-7 pr-2 py-1.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded text-xs dark:text-white focus:outline-none" placeholder="Pesquisar..." onkeyup="filterDropList('drop-Course', this.value)">
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-6">
+                <div class="lg:col-span-3 bg-white dark:bg-darkCard p-5 rounded-xl shadow-sm border-t-4 border-primary">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-sm font-bold uppercase tracking-wider">🔍 Filtros Inteligentes</h3>
+                        <button onclick="resetFilters()" class="text-xs bg-red-100 text-red-600 px-3 py-1.5 rounded font-bold uppercase hover:bg-red-200 transition">Limpar Filtros</button>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        
+                        <div class="dropdown-wrapper relative">
+                            <label class="label-filter">Método de Treinamento</label>
+                            <button type="button" onclick="toggleDrop('drop-Method', event)" class="w-full border border-slate-300 dark:border-slate-600 rounded-md p-2 text-left text-sm flex justify-between items-center bg-transparent dark:text-white focus:outline-none">
+                                <span id="label-Method" class="truncate">Todos selecionados</span>
+                                <span class="text-[10px] ml-2">▼</span>
+                            </button>
+                            <div id="drop-Method" class="dropdown-menu hidden absolute z-50 w-full mt-1 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-md shadow-xl flex flex-col max-h-64">
+                                <div class="p-2 border-b dark:border-slate-700 sticky top-0 bg-white dark:bg-slate-800 rounded-t-md">
+                                    <div class="relative">
+                                        <span class="absolute left-2.5 top-1.5 text-xs">🔍</span>
+                                        <input type="text" class="w-full pl-7 pr-2 py-1.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded text-xs dark:text-white focus:outline-none" placeholder="Pesquisar..." onkeyup="filterDropList('drop-Method', this.value)">
+                                    </div>
                                 </div>
+                                <div class="p-1 overflow-y-auto flex flex-col custom-scrollbar" id="list-Method"></div>
                             </div>
-                            <div class="p-1 overflow-y-auto flex flex-col custom-scrollbar" id="list-Course"></div>
+                        </div>
+
+                        <div class="dropdown-wrapper relative">
+                            <label class="label-filter">Curso</label>
+                            <button type="button" onclick="toggleDrop('drop-Course', event)" class="w-full border border-slate-300 dark:border-slate-600 rounded-md p-2 text-left text-sm flex justify-between items-center bg-transparent dark:text-white focus:outline-none">
+                                <span id="label-Course" class="truncate">Todos selecionados</span>
+                                <span class="text-[10px] ml-2">▼</span>
+                            </button>
+                            <div id="drop-Course" class="dropdown-menu hidden absolute z-50 w-full mt-1 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-md shadow-xl flex flex-col max-h-64">
+                                <div class="p-2 border-b dark:border-slate-700 sticky top-0 bg-white dark:bg-slate-800 rounded-t-md">
+                                    <div class="relative">
+                                        <span class="absolute left-2.5 top-1.5 text-xs">🔍</span>
+                                        <input type="text" class="w-full pl-7 pr-2 py-1.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded text-xs dark:text-white focus:outline-none" placeholder="Pesquisar..." onkeyup="filterDropList('drop-Course', this.value)">
+                                    </div>
+                                </div>
+                                <div class="p-1 overflow-y-auto flex flex-col custom-scrollbar" id="list-Course"></div>
+                            </div>
+                        </div>
+
+                        <div class="dropdown-wrapper relative">
+                            <label class="label-filter">Público-Alvo (Permissões)</label>
+                            <button type="button" onclick="toggleDrop('drop-Domain', event)" class="w-full border border-slate-300 dark:border-slate-600 rounded-md p-2 text-left text-sm flex justify-between items-center bg-transparent dark:text-white focus:outline-none">
+                                <span id="label-Domain" class="truncate">Todos selecionados</span>
+                                <span class="text-[10px] ml-2">▼</span>
+                            </button>
+                            <div id="drop-Domain" class="dropdown-menu hidden absolute z-50 w-full mt-1 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-md shadow-xl flex flex-col max-h-64">
+                                <div class="p-2 border-b dark:border-slate-700 sticky top-0 bg-white dark:bg-slate-800 rounded-t-md">
+                                    <div class="relative">
+                                        <span class="absolute left-2.5 top-1.5 text-xs">🔍</span>
+                                        <input type="text" class="w-full pl-7 pr-2 py-1.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded text-xs dark:text-white focus:outline-none" placeholder="Pesquisar..." onkeyup="filterDropList('drop-Domain', this.value)">
+                                    </div>
+                                </div>
+                                <div class="p-1 overflow-y-auto flex flex-col custom-scrollbar" id="list-Domain"></div>
+                            </div>
+                        </div>
+
+                        <div class="dropdown-wrapper relative">
+                            <label class="label-filter">Status</label>
+                            <button type="button" onclick="toggleDrop('drop-Status', event)" class="w-full border border-slate-300 dark:border-slate-600 rounded-md p-2 text-left text-sm flex justify-between items-center bg-transparent dark:text-white focus:outline-none">
+                                <span id="label-Status" class="truncate">Todos selecionados</span>
+                                <span class="text-[10px] ml-2">▼</span>
+                            </button>
+                            <div id="drop-Status" class="dropdown-menu hidden absolute z-50 w-full mt-1 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-md shadow-xl flex flex-col max-h-64">
+                                <div class="p-2 border-b dark:border-slate-700 sticky top-0 bg-white dark:bg-slate-800 rounded-t-md">
+                                    <div class="relative">
+                                        <span class="absolute left-2.5 top-1.5 text-xs">🔍</span>
+                                        <input type="text" class="w-full pl-7 pr-2 py-1.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded text-xs dark:text-white focus:outline-none" placeholder="Pesquisar..." onkeyup="filterDropList('drop-Status', this.value)">
+                                    </div>
+                                </div>
+                                <div class="p-1 overflow-y-auto flex flex-col custom-scrollbar" id="list-Status"></div>
+                            </div>
+                        </div>
+
+                        <div class="dropdown-wrapper relative">
+                            <label class="label-filter">Facilitador</label>
+                            <button type="button" onclick="toggleDrop('drop-Facilitator', event)" class="w-full border border-slate-300 dark:border-slate-600 rounded-md p-2 text-left text-sm flex justify-between items-center bg-transparent dark:text-white focus:outline-none">
+                                <span id="label-Facilitator" class="truncate">Todos selecionados</span>
+                                <span class="text-[10px] ml-2">▼</span>
+                            </button>
+                            <div id="drop-Facilitator" class="dropdown-menu hidden absolute z-50 w-full mt-1 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-md shadow-xl flex flex-col max-h-64">
+                                <div class="p-2 border-b dark:border-slate-700 sticky top-0 bg-white dark:bg-slate-800 rounded-t-md">
+                                    <div class="relative">
+                                        <span class="absolute left-2.5 top-1.5 text-xs">🔍</span>
+                                        <input type="text" class="w-full pl-7 pr-2 py-1.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded text-xs dark:text-white focus:outline-none" placeholder="Pesquisar..." onkeyup="filterDropList('drop-Facilitator', this.value)">
+                                    </div>
+                                </div>
+                                <div class="p-1 overflow-y-auto flex flex-col custom-scrollbar" id="list-Facilitator"></div>
+                            </div>
+                        </div>
+
+                        <div class="dropdown-wrapper relative">
+                            <label class="label-filter">Cluster</label>
+                            <button type="button" onclick="toggleDrop('drop-Cluster', event)" class="w-full border border-slate-300 dark:border-slate-600 rounded-md p-2 text-left text-sm flex justify-between items-center bg-transparent dark:text-white focus:outline-none">
+                                <span id="label-Cluster" class="truncate">Todos selecionados</span>
+                                <span class="text-[10px] ml-2">▼</span>
+                            </button>
+                            <div id="drop-Cluster" class="dropdown-menu hidden absolute z-50 w-full mt-1 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-md shadow-xl flex flex-col max-h-64">
+                                <div class="p-2 border-b dark:border-slate-700 sticky top-0 bg-white dark:bg-slate-800 rounded-t-md">
+                                    <div class="relative">
+                                        <span class="absolute left-2.5 top-1.5 text-xs">🔍</span>
+                                        <input type="text" class="w-full pl-7 pr-2 py-1.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded text-xs dark:text-white focus:outline-none" placeholder="Pesquisar..." onkeyup="filterDropList('drop-Cluster', this.value)">
+                                    </div>
+                                </div>
+                                <div class="p-1 overflow-y-auto flex flex-col custom-scrollbar" id="list-Cluster"></div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <div class="bg-white dark:bg-darkCard p-5 rounded-xl shadow-sm border-t-4 border-indigo-500 flex flex-col h-full">
+                    <h3 class="text-sm font-bold uppercase tracking-wider mb-4">📅 Filtro de Data</h3>
+                    <div class="flex flex-col gap-4 flex-grow">
+                        <div>
+                            <label class="label-filter">Data Inicial</label>
+                            <input type="date" id="filterDateStart" onchange="applyFilters()" class="w-full border border-slate-300 dark:border-slate-600 rounded-md p-2 text-sm bg-transparent dark:text-white focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="label-filter">Data Final</label>
+                            <input type="date" id="filterDateEnd" onchange="applyFilters()" class="w-full border border-slate-300 dark:border-slate-600 rounded-md p-2 text-sm bg-transparent dark:text-white focus:outline-none">
                         </div>
                     </div>
+                </div>
 
-                    <div class="dropdown-wrapper relative">
-                        <label class="label-filter">Público-Alvo (Permissões)</label>
-                        <button type="button" onclick="toggleDrop('drop-Domain', event)" class="w-full border border-slate-300 dark:border-slate-600 rounded-md p-2 text-left text-sm flex justify-between items-center bg-transparent dark:text-white focus:outline-none">
-                            <span id="label-Domain" class="truncate">Todos selecionados</span>
-                            <span class="text-[10px] ml-2">▼</span>
-                        </button>
-                        <div id="drop-Domain" class="dropdown-menu hidden absolute z-50 w-full mt-1 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-md shadow-xl flex flex-col max-h-64">
-                            <div class="p-2 border-b dark:border-slate-700 sticky top-0 bg-white dark:bg-slate-800 rounded-t-md">
-                                <div class="relative">
-                                    <span class="absolute left-2.5 top-1.5 text-xs">🔍</span>
-                                    <input type="text" class="w-full pl-7 pr-2 py-1.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded text-xs dark:text-white focus:outline-none" placeholder="Pesquisar..." onkeyup="filterDropList('drop-Domain', this.value)">
-                                </div>
-                            </div>
-                            <div class="p-1 overflow-y-auto flex flex-col custom-scrollbar" id="list-Domain"></div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                
+                <div class="bg-white dark:bg-darkCard p-5 rounded-xl shadow-sm border-l-4 border-purple-500 flex flex-col justify-center">
+                    <div class="flex items-center gap-1 group relative cursor-pointer w-fit mb-1">
+                        <p class="text-xs text-slate-500 font-bold uppercase">Alunos Únicos</p>
+                        <span class="text-slate-400 text-xs">ⓘ</span>
+                        <div class="absolute bottom-full left-0 mb-1 hidden group-hover:block w-56 p-2.5 bg-slate-800 text-white text-[11px] leading-tight font-normal normal-case tracking-normal rounded shadow-xl z-50">
+                            Quantidade exata de pessoas diferentes que realizaram alguma transação, independentemente de quantos cursos fizeram.
                         </div>
                     </div>
+                    <h2 id="kpiUnique" class="text-3xl font-bold text-slate-800 dark:text-white">0</h2>
+                </div>
 
-                    <div class="dropdown-wrapper relative">
-                        <label class="label-filter">Status</label>
-                        <button type="button" onclick="toggleDrop('drop-Status', event)" class="w-full border border-slate-300 dark:border-slate-600 rounded-md p-2 text-left text-sm flex justify-between items-center bg-transparent dark:text-white focus:outline-none">
-                            <span id="label-Status" class="truncate">Todos selecionados</span>
-                            <span class="text-[10px] ml-2">▼</span>
-                        </button>
-                        <div id="drop-Status" class="dropdown-menu hidden absolute z-50 w-full mt-1 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-md shadow-xl flex flex-col max-h-64">
-                            <div class="p-2 border-b dark:border-slate-700 sticky top-0 bg-white dark:bg-slate-800 rounded-t-md">
-                                <div class="relative">
-                                    <span class="absolute left-2.5 top-1.5 text-xs">🔍</span>
-                                    <input type="text" class="w-full pl-7 pr-2 py-1.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded text-xs dark:text-white focus:outline-none" placeholder="Pesquisar..." onkeyup="filterDropList('drop-Status', this.value)">
-                                </div>
-                            </div>
-                            <div class="p-1 overflow-y-auto flex flex-col custom-scrollbar" id="list-Status"></div>
+                <div class="bg-white dark:bg-darkCard p-5 rounded-xl shadow-sm border-l-4 border-blue-500 flex flex-col justify-center">
+                    <div class="flex items-center gap-1 group relative cursor-pointer w-fit mb-1">
+                        <p class="text-xs text-slate-500 font-bold uppercase">Total de inscrições</p>
+                        <span class="text-slate-400 text-xs">ⓘ</span>
+                        <div class="absolute bottom-full left-0 mb-1 hidden group-hover:block w-56 p-2.5 bg-slate-800 text-white text-[11px] leading-tight font-normal normal-case tracking-normal rounded shadow-xl z-50">
+                            É a soma de todas as movimentações no sistema (inscrições ativas e concluídas). Volume bruto do dashboard.
                         </div>
                     </div>
-
-                    <div class="dropdown-wrapper relative">
-                        <label class="label-filter">Facilitador</label>
-                        <button type="button" onclick="toggleDrop('drop-Facilitator', event)" class="w-full border border-slate-300 dark:border-slate-600 rounded-md p-2 text-left text-sm flex justify-between items-center bg-transparent dark:text-white focus:outline-none">
-                            <span id="label-Facilitator" class="truncate">Todos selecionados</span>
-                            <span class="text-[10px] ml-2">▼</span>
-                        </button>
-                        <div id="drop-Facilitator" class="dropdown-menu hidden absolute z-50 w-full mt-1 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-md shadow-xl flex flex-col max-h-64">
-                            <div class="p-2 border-b dark:border-slate-700 sticky top-0 bg-white dark:bg-slate-800 rounded-t-md">
-                                <div class="relative">
-                                    <span class="absolute left-2.5 top-1.5 text-xs">🔍</span>
-                                    <input type="text" class="w-full pl-7 pr-2 py-1.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded text-xs dark:text-white focus:outline-none" placeholder="Pesquisar..." onkeyup="filterDropList('drop-Facilitator', this.value)">
-                                </div>
-                            </div>
-                            <div class="p-1 overflow-y-auto flex flex-col custom-scrollbar" id="list-Facilitator"></div>
+                    <h2 id="kpiTotal" class="text-3xl font-bold text-slate-800 dark:text-white">0</h2>
+                </div>
+                
+                <div class="bg-white dark:bg-darkCard p-5 rounded-xl shadow-sm border-l-4 border-amber-500 flex flex-col justify-center">
+                    <div class="flex items-center gap-1 group relative cursor-pointer w-fit mb-1">
+                        <p class="text-xs text-slate-500 font-bold uppercase">Em andamento</p>
+                        <span class="text-slate-400 text-xs">ⓘ</span>
+                        <div class="absolute bottom-full left-0 mb-1 hidden group-hover:block w-56 p-2.5 bg-slate-800 text-white text-[11px] leading-tight font-normal normal-case tracking-normal rounded shadow-xl z-50">
+                            Porcentagem de alunos que iniciaram, mas ainda não concluíram.
                         </div>
                     </div>
-
-                    <div class="dropdown-wrapper relative">
-                        <label class="label-filter">Cluster</label>
-                        <button type="button" onclick="toggleDrop('drop-Cluster', event)" class="w-full border border-slate-300 dark:border-slate-600 rounded-md p-2 text-left text-sm flex justify-between items-center bg-transparent dark:text-white focus:outline-none">
-                            <span id="label-Cluster" class="truncate">Todos selecionados</span>
-                            <span class="text-[10px] ml-2">▼</span>
-                        </button>
-                        <div id="drop-Cluster" class="dropdown-menu hidden absolute z-50 w-full mt-1 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-md shadow-xl flex flex-col max-h-64">
-                            <div class="p-2 border-b dark:border-slate-700 sticky top-0 bg-white dark:bg-slate-800 rounded-t-md">
-                                <div class="relative">
-                                    <span class="absolute left-2.5 top-1.5 text-xs">🔍</span>
-                                    <input type="text" class="w-full pl-7 pr-2 py-1.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded text-xs dark:text-white focus:outline-none" placeholder="Pesquisar..." onkeyup="filterDropList('drop-Cluster', this.value)">
-                                </div>
-                            </div>
-                            <div class="p-1 overflow-y-auto flex flex-col custom-scrollbar" id="list-Cluster"></div>
+                    <h2 id="kpiEnrolledPct" class="text-3xl font-bold text-slate-800 dark:text-white">0%</h2>
+                    <p id="kpiEnrolledAbs" class="text-xs text-slate-400 mt-1 font-medium">0 participantes</p>
+                </div>
+                
+                <div class="bg-white dark:bg-darkCard p-5 rounded-xl shadow-sm border-l-4 border-green-500 flex flex-col justify-center">
+                    <div class="flex items-center gap-1 group relative cursor-pointer w-fit mb-1">
+                        <p class="text-xs text-slate-500 font-bold uppercase">Taxa de conclusão</p>
+                        <span class="text-slate-400 text-xs">ⓘ</span>
+                        <div class="absolute bottom-full left-0 mb-1 hidden group-hover:block w-56 p-2.5 bg-slate-800 text-white text-[11px] leading-tight font-normal normal-case tracking-normal rounded shadow-xl z-50">
+                            Porcentagem de alunos que já finalizaram com sucesso em relação ao volume total de inscrições.
                         </div>
                     </div>
-
+                    <h2 id="kpiCompletedPct" class="text-3xl font-bold text-slate-800 dark:text-white">0%</h2>
+                    <p id="kpiCompletedAbs" class="text-xs text-slate-400 mt-1 font-medium">0 participantes</p>
                 </div>
             </div>
 
-            <div class="bg-white dark:bg-darkCard p-5 rounded-xl shadow-sm border-t-4 border-indigo-500 flex flex-col h-full">
-                <h3 class="text-sm font-bold uppercase tracking-wider mb-4">📅 Filtro de Data</h3>
-                <div class="flex flex-col gap-4 flex-grow">
-                    <div>
-                        <label class="label-filter">Data Inicial</label>
-                        <input type="date" id="filterDateStart" onchange="applyFilters()" class="w-full border border-slate-300 dark:border-slate-600 rounded-md p-2 text-sm bg-transparent dark:text-white focus:outline-none">
-                    </div>
-                    <div>
-                        <label class="label-filter">Data Final</label>
-                        <input type="date" id="filterDateEnd" onchange="applyFilters()" class="w-full border border-slate-300 dark:border-slate-600 rounded-md p-2 text-sm bg-transparent dark:text-white focus:outline-none">
-                    </div>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                <div class="bg-white dark:bg-darkCard p-5 rounded-xl shadow-sm">
+                    <h3 class="text-sm font-bold uppercase text-slate-700 dark:text-slate-300 mb-1">Volume por Curso</h3>
+                    <p class="text-[10px] text-slate-500 mb-4">Mostra quais treinamentos têm mais alunos. Ajuda a entender rapidamente quais são os temas de maior interesse ou necessidade.</p>
+                    <canvas id="chartCourse"></canvas>
                 </div>
-            </div>
-
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-            
-            <div class="bg-white dark:bg-darkCard p-5 rounded-xl shadow-sm border-l-4 border-purple-500 flex flex-col justify-center">
-                <div class="flex items-center gap-1 group relative cursor-pointer w-fit mb-1">
-                    <p class="text-xs text-slate-500 font-bold uppercase">Alunos Únicos</p>
-                    <span class="text-slate-400 text-xs">ⓘ</span>
-                    <div class="absolute bottom-full left-0 mb-1 hidden group-hover:block w-56 p-2.5 bg-slate-800 text-white text-[11px] leading-tight font-normal normal-case tracking-normal rounded shadow-xl z-50">
-                        Quantidade exata de pessoas diferentes que realizaram alguma transação, independentemente de quantos cursos fizeram.
+                <div class="bg-white dark:bg-darkCard p-5 rounded-xl shadow-sm">
+                    <h3 class="text-sm font-bold uppercase text-slate-700 dark:text-slate-300 mb-1">Público-Alvo (Permissões)</h3>
+                    <p class="text-[10px] text-slate-500 mb-4">Divide os alunos pelo seu perfil (ex: Jovens, Funcionários). Serve para saber exatamente quem está consumindo os treinamentos.</p>
+                    <div class="flex justify-center" style="height: 300px;">
+                        <canvas id="chartDomain"></canvas>
                     </div>
                 </div>
-                <h2 id="kpiUnique" class="text-3xl font-bold text-slate-800 dark:text-white">0</h2>
             </div>
 
-            <div class="bg-white dark:bg-darkCard p-5 rounded-xl shadow-sm border-l-4 border-blue-500 flex flex-col justify-center">
-                <div class="flex items-center gap-1 group relative cursor-pointer w-fit mb-1">
-                    <p class="text-xs text-slate-500 font-bold uppercase">Total de Transações</p>
-                    <span class="text-slate-400 text-xs">ⓘ</span>
-                    <div class="absolute bottom-full left-0 mb-1 hidden group-hover:block w-56 p-2.5 bg-slate-800 text-white text-[11px] leading-tight font-normal normal-case tracking-normal rounded shadow-xl z-50">
-                        É a soma de todas as movimentações no sistema (inscrições e conclusões). Mostra o volume geral de uso da plataforma.
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                <div class="bg-white dark:bg-darkCard p-5 rounded-xl shadow-sm">
+                    <h3 class="text-sm font-bold uppercase text-slate-700 dark:text-slate-300 mb-1">⏳ Lead Time de Aprendizagem</h3>
+                    <p class="text-[10px] text-slate-500 mb-4">Média em dias entre a inscrição (Enrolled) e a conclusão (Completed).</p>
+                    <canvas id="chartLeadTime"></canvas>
+                </div>
+                <div class="bg-white dark:bg-darkCard p-5 rounded-xl shadow-sm overflow-x-auto">
+                    <h3 class="text-sm font-bold uppercase text-slate-700 dark:text-slate-300 mb-1">🔥 Mapa de Calor Sazonal</h3>
+                    <p class="text-[10px] text-slate-500 mb-4">Volume de Conclusões: Cruza o mês do ano com o Público-Alvo.</p>
+                    <div id="heatmapContainer" class="min-w-[500px]"></div>
+                </div>
+            </div>
+
+            <div class="bg-white dark:bg-darkCard p-5 rounded-xl shadow-sm mb-8 overflow-hidden">
+                <div class="flex flex-col md:flex-row items-center gap-4 mb-5">
+                    <h3 class="text-sm font-bold uppercase text-slate-700 dark:text-slate-300 whitespace-nowrap">📋 Lista de Participantes</h3>
+                    <div class="relative w-full">
+                        <span class="absolute left-3 top-2.5 text-sm">🔍</span>
+                        <input type="text" id="tableSearch" placeholder="Pesquisar FCP, ID, Nome ou Email..." class="w-full pl-9 pr-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg text-sm bg-slate-50 dark:bg-slate-700 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-primary" onkeyup="updateTable()">
                     </div>
                 </div>
-                <h2 id="kpiTotal" class="text-3xl font-bold text-slate-800 dark:text-white">0</h2>
-            </div>
-            
-            <div class="bg-white dark:bg-darkCard p-5 rounded-xl shadow-sm border-l-4 border-amber-500 flex flex-col justify-center">
-                <div class="flex items-center gap-1 group relative cursor-pointer w-fit mb-1">
-                    <p class="text-xs text-slate-500 font-bold uppercase">Inscritos (Enrolled)</p>
-                    <span class="text-slate-400 text-xs">ⓘ</span>
-                    <div class="absolute bottom-full left-0 mb-1 hidden group-hover:block w-56 p-2.5 bg-slate-800 text-white text-[11px] leading-tight font-normal normal-case tracking-normal rounded shadow-xl z-50">
-                        Quantidade de pessoas que começaram um curso, mas ainda não terminaram. Mostra o engajamento atual.
-                    </div>
-                </div>
-                <h2 id="kpiEnrolled" class="text-3xl font-bold text-slate-800 dark:text-white">0</h2>
-            </div>
-            
-            <div class="bg-white dark:bg-darkCard p-5 rounded-xl shadow-sm border-l-4 border-green-500 flex flex-col justify-center">
-                <div class="flex items-center gap-1 group relative cursor-pointer w-fit mb-1">
-                    <p class="text-xs text-slate-500 font-bold uppercase">Concluídos (Completed)</p>
-                    <span class="text-slate-400 text-xs">ⓘ</span>
-                    <div class="absolute bottom-full left-0 mb-1 hidden group-hover:block w-56 p-2.5 bg-slate-800 text-white text-[11px] leading-tight font-normal normal-case tracking-normal rounded shadow-xl z-50">
-                        Quantidade de pessoas que terminaram o curso. Mostra o resultado real e efetivo entregue.
-                    </div>
-                </div>
-                <h2 id="kpiCompleted" class="text-3xl font-bold text-slate-800 dark:text-white">0</h2>
-            </div>
-        </div>
-
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-            <div class="bg-white dark:bg-darkCard p-5 rounded-xl shadow-sm">
-                <h3 class="text-sm font-bold uppercase text-slate-700 dark:text-slate-300 mb-1">Volume por Curso</h3>
-                <p class="text-[10px] text-slate-500 mb-4">Mostra quais treinamentos têm mais alunos. Ajuda a entender rapidamente quais são os temas de maior interesse ou necessidade.</p>
-                <canvas id="chartCourse"></canvas>
-            </div>
-            <div class="bg-white dark:bg-darkCard p-5 rounded-xl shadow-sm">
-                <h3 class="text-sm font-bold uppercase text-slate-700 dark:text-slate-300 mb-1">Público-Alvo (Permissões)</h3>
-                <p class="text-[10px] text-slate-500 mb-4">Divide os alunos pelo seu perfil (ex: Jovens, Funcionários). Serve para saber exatamente quem está consumindo os treinamentos.</p>
-                <div class="flex justify-center" style="height: 300px;">
-                    <canvas id="chartDomain"></canvas>
+                
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-xs uppercase tracking-wider">
+                                <th class="p-3 font-semibold rounded-tl">FCP</th>
+                                <th class="p-3 font-semibold">Participant ID</th>
+                                <th class="p-3 font-semibold">Nome</th>
+                                <th class="p-3 font-semibold">Email</th>
+                                <th class="p-3 font-semibold">Curso</th>
+                                <th class="p-3 font-semibold text-center">Status</th>
+                                <th class="p-3 font-semibold rounded-tr text-right">Data</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody">
+                            </tbody>
+                    </table>
                 </div>
             </div>
-        </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-            <div class="bg-white dark:bg-darkCard p-5 rounded-xl shadow-sm">
-                <h3 class="text-sm font-bold uppercase text-slate-700 dark:text-slate-300 mb-1">⏳ Lead Time de Aprendizagem</h3>
-                <p class="text-[10px] text-slate-500 mb-4">Média em dias entre a inscrição (Enrolled) e a conclusão (Completed).</p>
-                <canvas id="chartLeadTime"></canvas>
-            </div>
-            <div class="bg-white dark:bg-darkCard p-5 rounded-xl shadow-sm overflow-x-auto">
-                <h3 class="text-sm font-bold uppercase text-slate-700 dark:text-slate-300 mb-1">🔥 Mapa de Calor Sazonal</h3>
-                <p class="text-[10px] text-slate-500 mb-4">Volume de Conclusões: Cruza o mês do ano com o Público-Alvo.</p>
-                <div id="heatmapContainer" class="min-w-[500px]"></div>
-            </div>
-        </div>
+        </main>
+    </div> <script>
+        // === LÓGICA DE LOGIN ===
+        const SENHA_MESTRA = "1234";
 
-        <div class="bg-white dark:bg-darkCard p-5 rounded-xl shadow-sm mb-8 overflow-hidden">
-            <div class="flex flex-col md:flex-row items-center gap-4 mb-5">
-                <h3 class="text-sm font-bold uppercase text-slate-700 dark:text-slate-300 whitespace-nowrap">📋 Lista de Participantes</h3>
-                <div class="relative w-full">
-                    <span class="absolute left-3 top-2.5 text-sm">🔍</span>
-                    <input type="text" id="tableSearch" placeholder="Pesquisar FCP, ID, Nome ou Email..." class="w-full pl-9 pr-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg text-sm bg-slate-50 dark:bg-slate-700 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-primary" onkeyup="updateTable()">
-                </div>
-            </div>
-            
-            <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse">
-                    <thead>
-                        <tr class="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-xs uppercase tracking-wider">
-                            <th class="p-3 font-semibold rounded-tl">FCP</th>
-                            <th class="p-3 font-semibold">Participant ID</th>
-                            <th class="p-3 font-semibold">Nome</th>
-                            <th class="p-3 font-semibold">Email</th>
-                            <th class="p-3 font-semibold">Curso</th>
-                            <th class="p-3 font-semibold text-center">Status</th>
-                            <th class="p-3 font-semibold rounded-tr text-right">Data</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tableBody">
-                        </tbody>
-                </table>
-            </div>
-        </div>
+        function checkAuth() {
+            if (sessionStorage.getItem("dashboard_auth") === "true") {
+                document.getElementById('loginOverlay').style.display = 'none';
+                document.getElementById('appContainer').classList.remove('hidden');
+                carregarBaseAutomatica();
+            }
+        }
 
-    </main>
+        function checkPassword() {
+            const p = document.getElementById('passwordInput').value;
+            if (p === SENHA_MESTRA) {
+                sessionStorage.setItem("dashboard_auth", "true");
+                document.getElementById('loginOverlay').style.display = 'none';
+                document.getElementById('appContainer').classList.remove('hidden');
+                carregarBaseAutomatica();
+            } else {
+                document.getElementById('loginError').classList.remove('hidden');
+            }
+        }
 
-    <script>
+        // Permite logar apertando Enter
+        document.getElementById('passwordInput').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                checkPassword();
+            }
+        });
+
+        // Inicializa sistema checando a senha em vez de já carregar a base
+        window.onload = checkAuth;
+
+        // Registro global do Plugin de Labels no Chart.js
+        Chart.register(ChartDataLabels);
+
+        // === VARIÁVEIS GLOBAIS ===
         let rawData = [];
         let filteredData = [];
         let charts = {};
 
+        // === FUNCIONALIDADES DA UI (Menus e Filtros) ===
         document.addEventListener('click', (e) => {
             if (!e.target.closest('.dropdown-wrapper')) {
                 document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.add('hidden'));
@@ -362,8 +412,7 @@
             return selected.length > 0 ? selected : ['__none__'];
         }
 
-        window.onload = carregarBaseAutomatica;
-
+        // === LEITURA DOS DADOS ===
         async function carregarBaseAutomatica() {
             try {
                 let response = await fetch('dados.xlsx');
@@ -514,7 +563,6 @@
             const enrolled = filteredData.filter(d => d.status === 'Enrolled').length;
             const completed = filteredData.filter(d => d.status === 'Completed').length;
             
-            // Lógica do Novo KPI (Alunos Únicos)
             const uniqueSet = new Set();
             filteredData.forEach(d => {
                 const id = d.email || d.participantId || d.name;
@@ -522,11 +570,21 @@
             });
             const uniqueStudents = uniqueSet.size;
 
+            // Update DOM
             document.getElementById('kpiTotal').innerText = total.toLocaleString('pt-BR');
-            document.getElementById('kpiEnrolled').innerText = enrolled.toLocaleString('pt-BR');
-            document.getElementById('kpiCompleted').innerText = completed.toLocaleString('pt-BR');
-            document.getElementById('kpiUnique').innerText = uniqueStudents.toLocaleString('pt-BR'); // Exibe o novo card
+            document.getElementById('kpiUnique').innerText = uniqueStudents.toLocaleString('pt-BR');
 
+            // Formatação em Porcentagem para Inscritos e Concluídos
+            let enrolledPct = total > 0 ? ((enrolled / total) * 100).toFixed(1) + '%' : '0%';
+            let completedPct = total > 0 ? ((completed / total) * 100).toFixed(1) + '%' : '0%';
+
+            document.getElementById('kpiEnrolledPct').innerText = enrolledPct;
+            document.getElementById('kpiEnrolledAbs').innerText = `${enrolled.toLocaleString('pt-BR')} participantes`;
+
+            document.getElementById('kpiCompletedPct').innerText = completedPct;
+            document.getElementById('kpiCompletedAbs').innerText = `${completed.toLocaleString('pt-BR')} participantes`;
+
+            // Barra de Meta
             let convRate = 0;
             if (enrolled > 0 || completed > 0) convRate = (completed / total) * 100;
             
@@ -540,10 +598,32 @@
             else progressBar.className = "h-5 rounded-full transition-all duration-1000 ease-out flex items-center justify-end pr-2 text-[10px] text-white font-bold bg-green-500";
         }
 
+        // === CONFIGS REUTILIZÁVEIS PARA O CHART.JS ===
+        const datalabelsConfigPercent = {
+            color: '#000',
+            font: { weight: 'bold', size: 10 },
+            formatter: (value, ctx) => {
+                let sum = ctx.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+                return sum > 0 ? (value * 100 / sum).toFixed(1) + "%" : "0%";
+            }
+        };
+
+        const tooltipConfigPercent = {
+            callbacks: {
+                label: function(context) {
+                    let value = context.raw;
+                    let sum = context.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+                    let pct = sum > 0 ? (value * 100 / sum).toFixed(1) + "%" : "0%";
+                    return ` ${value} transações (${pct})`;
+                }
+            }
+        };
+
         function updateCharts() {
             const isDark = document.documentElement.classList.contains('dark');
             const textColor = isDark ? '#cbd5e1' : '#475569';
 
+            // 1. Gráfico Volume de Cursos (Porcentagem habilitada)
             const courseCounts = {};
             filteredData.forEach(d => { courseCounts[d.course] = (courseCounts[d.course] || 0) + 1; });
             const sortedCourses = Object.entries(courseCounts).sort((a,b)=>b[1]-a[1]).slice(0, 7);
@@ -555,9 +635,18 @@
                     labels: sortedCourses.map(i => i[0].length > 25 ? i[0].substring(0, 25) + '...' : i[0]),
                     datasets: [{ label: 'Transações', data: sortedCourses.map(i => i[1]), backgroundColor: '#005eb8', borderRadius: 4 }]
                 },
-                options: { indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { ticks: { color: textColor } }, y: { ticks: { color: textColor, font: { size: 10 } } } } }
+                options: { 
+                    indexAxis: 'y', 
+                    plugins: { 
+                        legend: { display: false },
+                        datalabels: datalabelsConfigPercent,
+                        tooltip: tooltipConfigPercent
+                    }, 
+                    scales: { x: { ticks: { color: textColor } }, y: { ticks: { color: textColor, font: { size: 10 } } } } 
+                }
             });
 
+            // 2. Gráfico Público Alvo (Porcentagem habilitada)
             const domainCounts = {};
             filteredData.forEach(d => { domainCounts[d.domain] = (domainCounts[d.domain] || 0) + 1; });
 
@@ -568,9 +657,17 @@
                     labels: Object.keys(domainCounts),
                     datasets: [{ data: Object.values(domainCounts), backgroundColor: ['#005eb8', '#f59e0b', '#10b981', '#6366f1', '#8b5cf6'], borderWidth: 0 }]
                 },
-                options: { maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: textColor } } } }
+                options: { 
+                    maintainAspectRatio: false, 
+                    plugins: { 
+                        legend: { position: 'bottom', labels: { color: textColor } },
+                        datalabels: datalabelsConfigPercent,
+                        tooltip: tooltipConfigPercent
+                    } 
+                }
             });
 
+            // 3. Gráfico Lead Time (Médias de Dias - Escrito 'X dias' por consistência matemática)
             const userCourse = {};
             rawData.forEach(d => {
                 if(!d.date || d.participantId === '') return;
@@ -602,11 +699,20 @@
                 type: 'bar',
                 data: {
                     labels: sortedLeadTimes.map(i => i[0].length > 25 ? i[0].substring(0,25)+'...' : i[0]),
-                    datasets: [{ label: 'Média (Dias)', data: sortedLeadTimes.map(i => i[1]), backgroundColor: '#f59e0b', borderRadius: 4 }]
+                    datasets: [{ label: 'Média', data: sortedLeadTimes.map(i => i[1]), backgroundColor: '#f59e0b', borderRadius: 4 }]
                 },
-                options: { indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { ticks: { color: textColor } }, y: { ticks: { color: textColor, font: { size: 10 } } } } }
+                options: { 
+                    indexAxis: 'y', 
+                    plugins: { 
+                        legend: { display: false },
+                        datalabels: { color: '#000', font: { weight: 'bold', size: 10 }, formatter: (value) => value + ' dias' },
+                        tooltip: { callbacks: { label: (context) => ` ${context.raw} dias em média` } }
+                    }, 
+                    scales: { x: { ticks: { color: textColor } }, y: { ticks: { color: textColor, font: { size: 10 } } } } 
+                }
             });
 
+            // 4. Mapa de Calor (Mantém a lógica de Grid HTML)
             const months = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
             const domainsFilter = [...new Set(filteredData.map(d => d.domain))].sort();
             
