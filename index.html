@@ -37,7 +37,7 @@
     <header class="max-w-7xl mx-auto mb-6 flex flex-col md:flex-row justify-between items-center gap-4">
         <div>
             <h1 class="text-2xl font-bold text-primary dark:text-blue-400">📊 Dashboard Mais Conectados</h1>
-            <p class="text-slate-500 dark:text-slate-400 text-sm">Gestão Estratégica de Treinamentos</p>
+            <p class="text-slate-500 dark:text-slate-400 text-sm">Gestão  de Cursos</p>
         </div>
         <div class="flex items-center gap-4">
             <span id="lastUpdateInfo" class="text-xs text-slate-500 dark:text-slate-400 font-medium bg-white dark:bg-slate-800 px-3 py-1.5 rounded shadow-sm border border-slate-200 dark:border-slate-700">Carregando dados...</span>
@@ -49,7 +49,7 @@
         
         <div class="col-span-full bg-white dark:bg-darkCard p-6 rounded-xl shadow-sm border-t-4 border-green-500 mb-6">
             <div class="flex justify-between items-end mb-2">
-                <h3 class="text-sm font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">🎯 Taxa de Conversão (Modo Meta)</h3>
+                <h3 class="text-sm font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">🎯 Taxa de Conversão</h3>
                 <span id="conversionRateText" class="text-2xl font-bold text-green-600">0%</span>
             </div>
             <p class="text-xs text-slate-500 mb-3">Relação entre alunos inscritos e que concluíram com êxito o treinamento.</p>
@@ -190,11 +190,11 @@
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             <div class="bg-white dark:bg-darkCard p-5 rounded-xl shadow-sm border-l-4 border-blue-500 flex flex-col justify-center">
-                <p class="text-xs text-slate-500 font-bold uppercase">Total de Transações</p>
+                <p class="text-xs text-slate-500 font-bold uppercase">Total de Inscrições</p>
                 <h2 id="kpiTotal" class="text-3xl font-bold text-slate-800 dark:text-white">0</h2>
             </div>
             <div class="bg-white dark:bg-darkCard p-5 rounded-xl shadow-sm border-l-4 border-amber-500 flex flex-col justify-center">
-                <p class="text-xs text-slate-500 font-bold uppercase">Inscritos (Enrolled)</p>
+                <p class="text-xs text-slate-500 font-bold uppercase">Em Andamento (Enrolled)</p>
                 <h2 id="kpiEnrolled" class="text-3xl font-bold text-slate-800 dark:text-white">0</h2>
             </div>
             <div class="bg-white dark:bg-darkCard p-5 rounded-xl shadow-sm border-l-4 border-green-500 flex flex-col justify-center">
@@ -209,7 +209,7 @@
                 <canvas id="chartCourse"></canvas>
             </div>
             <div class="bg-white dark:bg-darkCard p-5 rounded-xl shadow-sm">
-                <h3 class="text-sm font-bold uppercase text-slate-700 dark:text-slate-300 mb-4">Público-Alvo (Permissões)</h3>
+                <h3 class="text-sm font-bold uppercase text-slate-700 dark:text-slate-300 mb-4">Público-Alvo</h3>
                 <div class="flex justify-center" style="height: 300px;">
                     <canvas id="chartDomain"></canvas>
                 </div>
