@@ -37,7 +37,7 @@
     <header class="max-w-7xl mx-auto mb-6 flex flex-col md:flex-row justify-between items-center gap-4">
         <div>
             <h1 class="text-2xl font-bold text-primary dark:text-blue-400">📊 Dashboard Mais Conectados</h1>
-            <p class="text-slate-500 dark:text-slate-400 text-sm">Gestão  de Cursos</p>
+            <p class="text-slate-500 dark:text-slate-400 text-sm">Gestão Estratégica de Treinamentos</p>
         </div>
         <div class="flex items-center gap-4">
             <span id="lastUpdateInfo" class="text-xs text-slate-500 dark:text-slate-400 font-medium bg-white dark:bg-slate-800 px-3 py-1.5 rounded shadow-sm border border-slate-200 dark:border-slate-700">Carregando dados...</span>
@@ -49,11 +49,16 @@
         
         <div class="col-span-full bg-white dark:bg-darkCard p-6 rounded-xl shadow-sm border-t-4 border-green-500 mb-6">
             <div class="flex justify-between items-end mb-2">
-                <h3 class="text-sm font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">🎯 Taxa de Conversão</h3>
+                <div class="flex items-center gap-1.5 group relative cursor-pointer w-fit">
+                    <h3 class="text-sm font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">🎯 Taxa de Conversão (Modo Meta)</h3>
+                    <span class="text-slate-400 text-sm">ⓘ</span>
+                    <div class="absolute bottom-full left-0 mb-2 hidden group-hover:block w-72 p-2.5 bg-slate-800 text-white text-[11px] leading-tight font-normal normal-case tracking-normal rounded shadow-xl z-50">
+                        A porcentagem de alunos que se inscrevem e realmente chegam até o fim. Mede a eficiência do treinamento e ajuda a ver se há muita desistência no meio do caminho.
+                    </div>
+                </div>
                 <span id="conversionRateText" class="text-2xl font-bold text-green-600">0%</span>
             </div>
-            <p class="text-xs text-slate-500 mb-3">Relação entre alunos inscritos e que concluíram com êxito o treinamento.</p>
-            <div class="w-full bg-slate-200 rounded-full h-5 dark:bg-slate-700 overflow-hidden shadow-inner">
+            <div class="w-full bg-slate-200 rounded-full h-5 dark:bg-slate-700 overflow-hidden shadow-inner mt-3">
                 <div id="conversionProgressBar" class="bg-green-500 h-5 rounded-full transition-all duration-1000 ease-out flex items-center justify-end pr-2 text-[10px] text-white font-bold" style="width: 0%"></div>
             </div>
         </div>
@@ -102,7 +107,7 @@
                     </div>
 
                     <div class="dropdown-wrapper relative">
-                        <label class="label-filter">Público-Alvo</label>
+                        <label class="label-filter">Público-Alvo (Permissões)</label>
                         <button type="button" onclick="toggleDrop('drop-Domain', event)" class="w-full border border-slate-300 dark:border-slate-600 rounded-md p-2 text-left text-sm flex justify-between items-center bg-transparent dark:text-white focus:outline-none">
                             <span id="label-Domain" class="truncate">Todos selecionados</span>
                             <span class="text-[10px] ml-2">▼</span>
@@ -190,26 +195,46 @@
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             <div class="bg-white dark:bg-darkCard p-5 rounded-xl shadow-sm border-l-4 border-blue-500 flex flex-col justify-center">
-                <p class="text-xs text-slate-500 font-bold uppercase">Total de Inscrições</p>
+                <div class="flex items-center gap-1 group relative cursor-pointer w-fit mb-1">
+                    <p class="text-xs text-slate-500 font-bold uppercase">Total de Transações</p>
+                    <span class="text-slate-400 text-xs">ⓘ</span>
+                    <div class="absolute bottom-full left-0 mb-1 hidden group-hover:block w-56 p-2.5 bg-slate-800 text-white text-[11px] leading-tight font-normal normal-case tracking-normal rounded shadow-xl z-50">
+                        É a soma de todas as movimentações no sistema. Mostra o volume geral de uso da plataforma.
+                    </div>
+                </div>
                 <h2 id="kpiTotal" class="text-3xl font-bold text-slate-800 dark:text-white">0</h2>
             </div>
             <div class="bg-white dark:bg-darkCard p-5 rounded-xl shadow-sm border-l-4 border-amber-500 flex flex-col justify-center">
-                <p class="text-xs text-slate-500 font-bold uppercase">Em Andamento (Enrolled)</p>
+                <div class="flex items-center gap-1 group relative cursor-pointer w-fit mb-1">
+                    <p class="text-xs text-slate-500 font-bold uppercase">Inscritos (Enrolled)</p>
+                    <span class="text-slate-400 text-xs">ⓘ</span>
+                    <div class="absolute bottom-full left-0 mb-1 hidden group-hover:block w-56 p-2.5 bg-slate-800 text-white text-[11px] leading-tight font-normal normal-case tracking-normal rounded shadow-xl z-50">
+                        Quantidade de pessoas que começaram um curso, mas ainda não terminaram. Mostra o engajamento atual.
+                    </div>
+                </div>
                 <h2 id="kpiEnrolled" class="text-3xl font-bold text-slate-800 dark:text-white">0</h2>
             </div>
             <div class="bg-white dark:bg-darkCard p-5 rounded-xl shadow-sm border-l-4 border-green-500 flex flex-col justify-center">
-                <p class="text-xs text-slate-500 font-bold uppercase">Concluídos (Completed)</p>
+                <div class="flex items-center gap-1 group relative cursor-pointer w-fit mb-1">
+                    <p class="text-xs text-slate-500 font-bold uppercase">Concluídos (Completed)</p>
+                    <span class="text-slate-400 text-xs">ⓘ</span>
+                    <div class="absolute bottom-full left-0 mb-1 hidden group-hover:block w-56 p-2.5 bg-slate-800 text-white text-[11px] leading-tight font-normal normal-case tracking-normal rounded shadow-xl z-50">
+                        Quantidade de pessoas que terminaram o curso. Mostra o resultado real e efetivo entregue.
+                    </div>
+                </div>
                 <h2 id="kpiCompleted" class="text-3xl font-bold text-slate-800 dark:text-white">0</h2>
             </div>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
             <div class="bg-white dark:bg-darkCard p-5 rounded-xl shadow-sm">
-                <h3 class="text-sm font-bold uppercase text-slate-700 dark:text-slate-300 mb-4">Volume por Curso</h3>
+                <h3 class="text-sm font-bold uppercase text-slate-700 dark:text-slate-300 mb-1">Volume por Curso</h3>
+                <p class="text-[10px] text-slate-500 mb-4">Mostra quais treinamentos têm mais alunos. Ajuda a entender rapidamente quais são os temas de maior interesse ou necessidade.</p>
                 <canvas id="chartCourse"></canvas>
             </div>
             <div class="bg-white dark:bg-darkCard p-5 rounded-xl shadow-sm">
-                <h3 class="text-sm font-bold uppercase text-slate-700 dark:text-slate-300 mb-4">Público-Alvo</h3>
+                <h3 class="text-sm font-bold uppercase text-slate-700 dark:text-slate-300 mb-1">Público-Alvo (Permissões)</h3>
+                <p class="text-[10px] text-slate-500 mb-4">Divide os alunos pelo seu perfil (ex: Jovens, Funcionários). Serve para saber exatamente quem está consumindo os treinamentos.</p>
                 <div class="flex justify-center" style="height: 300px;">
                     <canvas id="chartDomain"></canvas>
                 </div>
@@ -230,11 +255,8 @@
         </div>
 
         <div class="bg-white dark:bg-darkCard p-5 rounded-xl shadow-sm mb-8 overflow-hidden">
-            <div class="mb-5">
-                <div class="flex items-center gap-3 mb-2">
-                    <h3 class="text-sm font-bold uppercase text-slate-700 dark:text-slate-300">📋 Lista de Participantes</h3>
-                    <span class="text-[10px] text-slate-500 block">Mostrando os 100 primeiros registros filtrados.</span>
-                </div>
+            <div class="flex flex-col md:flex-row items-center gap-4 mb-5">
+                <h3 class="text-sm font-bold uppercase text-slate-700 dark:text-slate-300 whitespace-nowrap">📋 Lista de Participantes</h3>
                 <div class="relative w-full">
                     <span class="absolute left-3 top-2.5 text-sm">🔍</span>
                     <input type="text" id="tableSearch" placeholder="Pesquisar FCP, ID, Nome ou Email..." class="w-full pl-9 pr-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg text-sm bg-slate-50 dark:bg-slate-700 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-primary" onkeyup="updateTable()">
@@ -267,7 +289,6 @@
         let filteredData = [];
         let charts = {};
 
-        // Fecha menus abertos ao clicar fora
         document.addEventListener('click', (e) => {
             if (!e.target.closest('.dropdown-wrapper')) {
                 document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.add('hidden'));
@@ -282,7 +303,6 @@
             if (isHidden) menu.classList.remove('hidden');
         }
 
-        // Pesquisa dentro do filtro
         function filterDropList(dropId, term) {
             term = term.toLowerCase();
             const items = document.querySelectorAll(`#${dropId} .drop-item`);
@@ -404,7 +424,6 @@
             createCustomOptions(facilitators, 'Facilitator');
             createCustomOptions(clusters, 'Cluster');
 
-            // Status Options (Fixo)
             document.getElementById('list-Status').innerHTML = `
                 <label class="flex items-center p-2 text-sm dark:text-slate-200 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 drop-item border-b dark:border-slate-700">
                     <input type="checkbox" class="mr-3 cb-Status" value="all" onchange="toggleAllDrop('Status', this.checked)" checked> 
