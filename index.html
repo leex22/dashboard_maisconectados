@@ -69,7 +69,7 @@
             
             <div class="col-span-full bg-white dark:bg-darkCard p-6 rounded-xl shadow-sm border-t-4 border-green-500 mb-6">
                 <div class="flex justify-between items-end mb-2">
-                    <div class="flex items-center gap-1.5 group relative cursor-pointer w-fit">
+                    <div class="flex items-center gap-1.5 group relative cursor-pointer w-fit mb-1">
                         <h3 class="text-sm font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">🎯 Taxa de Conclusão</h3>
                         <span class="text-slate-400 text-sm">ⓘ</span>
                         <div class="absolute bottom-full left-0 mb-2 hidden group-hover:block w-72 p-2.5 bg-slate-800 text-white text-[11px] leading-tight font-normal normal-case tracking-normal rounded shadow-xl z-50">
@@ -602,38 +602,56 @@
             applyFilters();
         }
 
+        // === AJUSTE ARQUITETURAL DOS CARDS APLICADO AQUI ===
         function updateKPIs() {
-            const total = filteredData.length;
-            const enrolled = filteredData.filter(d => d.status === 'Enrolled').length;
-            const completed = filteredData.filter(d => d.status === 'Completed').length;
-            
-            const uniqueSet = new Set();
-            filteredData.forEach(d => {
-                const id = d.email || d.participantId || d.name;
-                if(id) uniqueSet.add(id);
-            });
-            const uniqueStudents = uniqueSet.size;
+            // Criação de Sets para isolar dados únicos por par (Aluno + Curso)
+            const uniqueInscriptions = new Set();
+            const completedInscriptions = new Set();
+            const uniqueStudentsSet = new Set();
 
-            document.getElementById('kpiTotal').innerText = total.toLocaleString('pt-BR');
+            filteredData.forEach(d => {
+                const studentId = d.participantId || d.email || d.name;
+                if (studentId) {
+                    uniqueStudentsSet.add(studentId); // Aluno Único puro
+                    
+                    const inscriptionKey = `${studentId}|${d.course}`; // Chave Única da Matrícula
+                    uniqueInscriptions.add(inscriptionKey);
+                    
+                    if (d.status === 'Completed') {
+                        completedInscriptions.add(inscriptionKey);
+                    }
+                }
+            });
+
+            const totalInscritos = uniqueInscriptions.size;
+            const totalConcluidos = completedInscriptions.size;
+            
+            // Regra de Negócio Indutiva: Se concluiu, sai do "Em Andamento"
+            const totalEmAndamento = Math.max(0, totalInscritos - totalConcluidos);
+            const uniqueStudents = uniqueStudentsSet.size;
+
+            // Injeção de valores corrigidos nos cards HTML
+            document.getElementById('kpiTotal').innerText = totalInscritos.toLocaleString('pt-BR');
             document.getElementById('kpiUnique').innerText = uniqueStudents.toLocaleString('pt-BR');
 
-            const engagement = uniqueStudents > 0 ? (total / uniqueStudents).toFixed(1) : '0';
+            // Engajamento calculado sobre inscrições de cursos reais
+            const engagement = uniqueStudents > 0 ? (totalInscritos / uniqueStudents).toFixed(1) : '0';
             document.getElementById('kpiEngagement').innerText = engagement;
 
-            let enrolledPct = total > 0 ? ((enrolled / total) * 100).toFixed(1) + '%' : '0%';
+            // Card Em Andamento (Percentual e valor absoluto real)
+            let enrolledPct = totalInscritos > 0 ? ((totalEmAndamento / totalInscritos) * 100).toFixed(1) + '%' : '0%';
             document.getElementById('kpiEnrolledPct').innerText = enrolledPct;
-            document.getElementById('kpiEnrolledAbs').innerText = `${enrolled.toLocaleString('pt-BR')} participantes`;
+            document.getElementById('kpiEnrolledAbs').innerText = `${totalEmAndamento.toLocaleString('pt-BR')} participantes`;
 
-            let convRate = 0;
-            if (enrolled > 0 || completed > 0) convRate = (completed / total) * 100;
+            // Taxa de Conclusão baseada no Funil de Conversão correto
+            let convRate = totalInscritos > 0 ? (totalConcluidos / totalInscritos) * 100 : 0;
             
             const rateStr = convRate.toFixed(1) + '%';
             document.getElementById('conversionRateText').innerText = rateStr;
             
             const progressBar = document.getElementById('conversionProgressBar');
             progressBar.style.width = rateStr;
-            // Número de concluídos inserido diretamente dentro da barra de progresso
-            progressBar.innerText = `${completed.toLocaleString('pt-BR')} concluídos`;
+            progressBar.innerText = `${totalConcluidos.toLocaleString('pt-BR')} concluídos`;
             
             if(convRate < 40) progressBar.className = "h-5 rounded-full transition-all duration-1000 ease-out flex items-center justify-end pr-2 text-[10px] text-white font-bold whitespace-nowrap overflow-hidden bg-red-500";
             else if(convRate < 70) progressBar.className = "h-5 rounded-full transition-all duration-1000 ease-out flex items-center justify-end pr-2 text-[10px] text-white font-bold whitespace-nowrap overflow-hidden bg-amber-500";
@@ -682,7 +700,6 @@
                         datalabels: datalabelsConfigPercent,
                         tooltip: tooltipConfigPercent
                     }, 
-                    // Alteração implementada: linhas de grade (gridlines) removidas para manter o visual clean
                     scales: { 
                         x: { grid: { display: false }, ticks: { color: textColor } }, 
                         y: { grid: { display: false }, ticks: { color: textColor, font: { size: 10 } } } 
@@ -736,7 +753,6 @@
             });
             const sortedLeadTimes = Object.entries(courseLeadTimeAvg).sort((a,b)=>b[1]-a[1]).slice(0, 7);
 
-            // Gráfico de Lead Time revertido para a estrutura legível ("X dias", sem linhas de grade)
             if(charts.chartLeadTime) charts.chartLeadTime.destroy();
             charts.chartLeadTime = new Chart(document.getElementById('chartLeadTime'), {
                 type: 'bar',
